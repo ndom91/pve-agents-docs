@@ -41,8 +41,7 @@ export const Route = createRootRoute({
     scripts: [
       {
         src: "https://stats.ndo.dev/api/script.js",
-        // TODO: replace with the real site id once the site is registered.
-        "data-site-id": "<PLACEHOLDER>",
+        "data-site-id": "9aca26f25dbc",
         defer: true,
       },
     ],
