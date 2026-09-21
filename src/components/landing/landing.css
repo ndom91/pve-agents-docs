@@ -88,7 +88,7 @@
 .pa-field {
   position: absolute;
   z-index: 0;
-  inset-block-start: -56px;
+  inset-block-start: -150px;
   inset-inline-end: -140px;
   width: min(660px, 62vw);
   height: 620px;

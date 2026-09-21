@@ -173,17 +173,18 @@ export function LandingPage() {
             </a>
           </div>
 
-          {/* The headline word is "disposable" and the console above only ever
-              builds. This is where the other half of the claim goes, and it
-              introduces a screenshot whose sidebar reads "DESTROYED 15". */}
+          {/* The pitch, in the gap before the fleet screenshot: what this gives
+              you that a laptop cannot. Parallelism, isolation, a clean slate,
+              and hardware you already own. */}
           <div className="pa-bridge">
             <p className="pa-bridge-lead">
-              Ask for one, then forget it exists.
+              Run as many as your host will hold.
             </p>
             <p className="pa-bridge-body">
-              Read what the agent did, keep the branch or throw it away. Idle
-              containers are reaped without being asked, and one still holding
-              work you have not kept is left alone until you deal with it.
+              Each workspace is its own container, so nothing an agent does
+              touches your workstation. Every one starts from the same clean
+              template, they run in parallel rather than in turn, and the
+              hardware is already yours.
             </p>
           </div>
 
