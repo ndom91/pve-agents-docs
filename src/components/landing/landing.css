@@ -294,15 +294,6 @@
   color: var(--text-primary);
 }
 
-.pa-section-sub,
-.pa-aside {
-  max-width: 68ch;
-  margin: 0 0 32px;
-  font-size: var(--text-body-lg);
-  line-height: var(--leading-prose);
-  color: var(--text-secondary);
-}
-
 /* ── The loop ──────────────────────────────────────────────────────── */
 
 .pa-loop {
@@ -380,68 +371,10 @@
   border-radius: var(--radius-sm);
 }
 
-.pa-shot-hero,
-.pa-shot-wide {
+.pa-shot-hero {
   margin-top: 16px;
   padding: var(--space-3);
   border-radius: var(--radius-xl);
-}
-
-/* ── Refusals ──────────────────────────────────────────────────────── */
-
-.pa-refusals {
-  display: grid;
-  gap: 1px;
-  margin-top: 32px;
-  border: 1px solid var(--line-border);
-  border-radius: var(--radius-xl);
-  background: var(--line-inner);
-  overflow: hidden;
-}
-
-.pa-refusal {
-  padding: var(--space-8);
-  background: var(--surface-raised);
-}
-
-.pa-refusal-title {
-  margin: 0 0 var(--space-3);
-  font-size: var(--text-title);
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-.pa-refusal-body {
-  max-width: 76ch;
-  margin: 0;
-  font-size: var(--text-body-md);
-  line-height: var(--leading-prose);
-  color: var(--text-secondary);
-}
-
-/* ── Code ──────────────────────────────────────────────────────────── */
-
-.pa-code {
-  margin: 0 0 32px;
-  padding: var(--space-7);
-  overflow-x: auto;
-  border: 1px solid var(--line-border);
-  border-radius: var(--radius-xl);
-  background: var(--surface-well);
-  font-family: var(--font-mono);
-  font-size: var(--text-mono);
-  line-height: 1.8;
-  color: var(--text-body);
-}
-
-.pa-section-sub code,
-.pa-aside code {
-  padding: 1px var(--space-2);
-  border-radius: var(--radius-xs);
-  background: var(--chip-neutral-bg);
-  font-family: var(--font-mono);
-  font-size: 0.9em;
-  color: var(--chip-neutral-text);
 }
 
 /* ── Footer ────────────────────────────────────────────────────────── */

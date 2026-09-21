@@ -51,26 +51,6 @@ const rail = [
   },
 ];
 
-/**
- * The refusals. This is the most distinctive thing about the project and the
- * section most likely to be skimmed, so it leads with the promise and puts the
- * reasoning underneath.
- */
-const refusals = [
-  {
-    title: "Only the ownership marker authorises a destroy",
-    body: "Every container carries the controller's id, the workspace id and a token in its LXC description, re-read immediately before anything is purged. Pool membership, hostname and tags are discovery aids, not permission.",
-  },
-  {
-    title: "Unsaved work is kept",
-    body: "Uncommitted changes or unpushed commits exempt a workspace from reaping, and so does a workspace the controller could not inspect. “Could not tell” is not “nothing to lose”.",
-  },
-  {
-    title: "Unrecognised containers are reported, never destroyed",
-    body: "A restored or lost database makes every live workspace look orphaned, and a timer would then purge the fleet.",
-  },
-];
-
 function DocsLink({
   to = "",
   className,
@@ -218,55 +198,6 @@ export function LandingPage() {
                 <figcaption>{item.caption}</figcaption>
               </figure>
             ))}
-          </div>
-        </section>
-
-        {/* ===================== REFUSALS ===================== */}
-        <section className="pa-section" aria-labelledby="pa-safety-heading">
-          <SectionLabel>What it will not do</SectionLabel>
-          <h2 className="pa-section-title" id="pa-safety-heading">
-            Destruction is the only path that loses something irreversibly.
-          </h2>
-          <p className="pa-section-sub">
-            So it is the one with the most said about it.
-          </p>
-
-          <div className="pa-refusals">
-            {refusals.map((item) => (
-              <article className="pa-refusal" key={item.title}>
-                <h3 className="pa-refusal-title">{item.title}</h3>
-                <p className="pa-refusal-body">{item.body}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        {/* ===================== QUICK START ===================== */}
-        <section className="pa-section" aria-labelledby="pa-start-heading">
-          <SectionLabel>Quick start</SectionLabel>
-          <h2 className="pa-section-title" id="pa-start-heading">
-            Nothing touches Proxmox until you ask it to.
-          </h2>
-          <p className="pa-section-sub">
-            <code>PROVISIONING_ENABLED</code> is off by default. With it off a
-            request queues a durable operation and builds nothing — the intended
-            way to try the UI, the API and the whole state machine without a
-            hypervisor anywhere near it.
-          </p>
-
-          <pre className="pa-code">
-            <code>{`pnpm install
-cp .env.example .env
-pnpm dev                   # http://127.0.0.1:3000`}</code>
-          </pre>
-
-          <div className="pa-hero-actions">
-            <DocsLink
-              to="getting-started/quick-start"
-              className="pa-btn pa-btn-primary"
-            >
-              Read the docs
-            </DocsLink>
           </div>
         </section>
 
