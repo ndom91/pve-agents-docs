@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { Logo } from "@/components/logo";
 import { gitConfig } from "@/lib/shared";
 import "./landing.css";
 
@@ -87,10 +88,7 @@ export function LandingPage() {
     <div className="pa-root">
       <div className="pa-shell">
         <nav className="pa-nav" aria-label="Primary">
-          <span className="pa-mark">
-            <span className="pa-mark-glyph" aria-hidden="true" />
-            pve-agents
-          </span>
+          <Logo />
           <div className="pa-nav-links">
             <DocsLink className="pa-nav-link">Docs</DocsLink>
             <DocsLink to="getting-started/quick-start" className="pa-nav-link">
@@ -214,10 +212,7 @@ export function LandingPage() {
         </section>
 
         <footer className="pa-footer">
-          <span className="pa-mark">
-            <span className="pa-mark-glyph" aria-hidden="true" />
-            pve-agents
-          </span>
+          <Logo />
           <div className="pa-footer-links">
             <DocsLink className="pa-nav-link">Docs</DocsLink>
             <a
