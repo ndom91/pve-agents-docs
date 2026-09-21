@@ -46,6 +46,27 @@ subscription token, and it creates and destroys real containers.
   destroyed. A restored database does not cost you your fleet.
 - **Lock it down** — GitHub sign-in for the UI, hashed API keys for machines.
 
+## What you need
+
+- **A Proxmox host**, with an API token, a pool, and a golden template built by
+  `deploy/build-workspace-template.sh`. The controller runs against its API; it does not have to
+  run on the host itself.
+- **RAM on that host to match how many workspaces you want at once.** Each one is a real LXC
+  running a checkout and a Claude Code agent, so the ceiling on parallelism is the memory you are
+  willing to give them. Size a single container in the template, decide how many you want live,
+  and multiply — the controller will happily ask for more than the host can seat.
+- **Disk is cheaper than it looks.** Containers are linked clones of one ZFS snapshot, so the
+  template's bulk (the Agent SDK alone is about 245 MB) is paid once for the whole fleet rather
+  than per workspace.
+- **Node 22+ and pnpm**, wherever the controller runs.
+- **A GitHub App**, so the controller clones and pushes as an installation rather than as you.
+- **A Claude subscription token**, from `claude setup-token`. Not an API key.
+
+None of that is needed to try the UI. With `PROVISIONING_ENABLED` off — which is the default —
+a request queues a durable operation and builds nothing, so the whole state machine can be
+exercised without a hypervisor anywhere near it. See the
+[quick start](/docs/getting-started/quick-start).
+
 ## Where to go next
 
 | | |

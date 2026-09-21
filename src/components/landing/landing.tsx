@@ -171,6 +171,21 @@ export function LandingPage() {
             </a>
           </div>
 
+          {/* The headline word is "disposable" and the console above only ever
+              builds. This is where the other half of the claim goes, and it
+              introduces a screenshot whose sidebar reads "DESTROYED 15". */}
+          <div className="pa-bridge">
+            <p className="pa-bridge-lead">
+              Most of what it does is destroy things.
+            </p>
+            <p className="pa-bridge-body">
+              Idle workspaces are reaped on a timer. It will not reap one
+              holding uncommitted changes or unpushed commits, one whose agent
+              is waiting on you, or one it could not inspect — because “could
+              not tell” is not “nothing to lose”.
+            </p>
+          </div>
+
           <figure className="pa-shot pa-shot-hero">
             <img
               src="/screenshots/home.png"
