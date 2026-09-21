@@ -1,0 +1,36 @@
+---
+title: Environment
+description: The variables that decide whether anything happens.
+---
+
+Copy `.env.example` to `.env`. Thirty variables, of which these decide whether anything happens:
+
+| | |
+|---|---|
+| `CONTROLLER_AUTH_SECRET` | Turns authentication on. **Unset means the controller answers anyone who can reach it.** Set it. |
+| `PROVISIONING_ENABLED` | Gates every Proxmox write. Off by default. |
+| `PROXMOX_*` | URL, token, node, pool, template VMID, bridge, VMID floor. |
+| `GITHUB_APP_*` | Id, installation id and key path. How the controller clones and pushes. Distinct from `GITHUB_CLIENT_*`, which is only how you sign in. |
+| `WORKSPACE_CLAUDE_OAUTH_TOKEN` | From `claude setup-token`. Without it a workspace builds and the agent step fails. |
+| `WORKER_ENABLED` | Runs the operation worker in the server process. Off by default, so the first clone and destroy can be stepped by hand with `pnpm worker:tick`. |
+
+The full list, with the reasoning for each, is in
+[the environment variable reference](/docs/reference/environment-variables).
+
+## Where it comes from in production
+
+Every `pnpm` entrypoint loads a local `.env` through Node's `--env-file-if-exists`, which is for
+development only; `.env` is gitignored and a missing one is not an error. In production the systemd
+`EnvironmentFile` supplies the same variables.
+
+One file, not two. A second copy under `/etc` existed briefly and was removed, because two sources
+of configuration is one more than can be kept in agreement.
+
+## Configuration versus policy
+
+`.env` holds what the controller **is**: its Proxmox token, its GitHub App, where its key lives.
+Changing those is a deployment change and a restart is the natural moment.
+
+The database holds what it **does**: whether reaping is on and its thresholds. Those get tuned
+against a running fleet, so they are read on every pass and take effect without a restart. That is
+the entire reason they moved.

@@ -1,0 +1,62 @@
+---
+title: Networking
+description: The network shape the controller assumes, and how a workspace gets an address.
+---
+
+Use a dedicated private agent VLAN or subnet:
+
+```text
+Trusted workstation and controller
+            |
+            | SSH
+            v
+Agent VLAN / subnet
+├── DHCP
+├── outbound NAT
+├── no public inbound access
+└── per-LXC Proxmox firewall enabled
+```
+
+Firewall policy should allow:
+
+- SSH into workspace LXCs from the controller only. Nothing else has a reason to.
+- Outbound DNS, Git hosting, package registries, and model-provider endpoints.
+- No unsolicited inbound internet traffic.
+- Access to internal services only when a task explicitly requires it.
+
+The discovered IP is used directly as the SSH target; the hostname `agent-<short id>` is the
+friendly name and exists for people rather than for resolution. Internal DNS such as
+`agent-7f2a.agent.internal` would be a convenience, not a fix for anything.
+
+## Address discovery
+
+Configure the cloned LXC NIC for DHCP and poll:
+
+```text
+GET /nodes/{node}/lxc/{vmid}/interfaces
+```
+
+Ignore loopback, link-local, and addresses outside the expected subnet. Confirm actual SSH
+readiness after discovering an address.
+
+If stable addresses become necessary, use one authoritative DHCP/IPAM system with MAC reservations.
+Do not maintain an independent controller allocation table in parallel with another IPAM.
+
+Proxmox SDN DHCP/IPAM remains documented as a technology preview. Use it only if the homelab
+already depends on it successfully.
+
+## SSH host verification
+
+Each cloned LXC must have unique SSH host keys. Never preserve the template's host private keys
+across clones.
+
+The policy in use is:
+
+1. Obtain the LXC address and MAC from Proxmox.
+2. Confirm they belong to the expected workspace subnet and VMID.
+3. Connect with `StrictHostKeyChecking=accept-new` only on that isolated subnet.
+4. Store and pin the resulting host key for subsequent connections.
+5. Remove the known-host entry when the workspace is destroyed.
+
+This is trust-on-first-use and remains vulnerable to an attacker already positioned on the private
+subnet. SSH host certificates are the stronger long-term design.

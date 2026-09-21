@@ -1,0 +1,27 @@
+---
+title: Deliberately not built
+description: Things that were considered, decided against, and the reason each was.
+---
+
+- **An organiser agent**, and registering the controller as a Herdr machine. The web UI made both
+  unnecessary, and then Herdr itself went.
+- **A database backup.** Judged low value: the containers outlive the database and the orphan scan
+  finds them, so what is lost is history rather than access.
+- **Automatic orphan destruction.** A restored or lost database makes every live workspace look
+  orphaned, and a timer would then purge the fleet. It is a scan and a click.
+- **Opening a pull request.** The GitHub App has the permission, but a PR wants a title and a body
+  that would have to be invented or demanded, and a branch is enough to review from.
+- **Editing files from the browser.** `@pierre/diffs` would support it. It is a different feature.
+- **Tests that call a server function.** A server function reads its options from an
+  AsyncLocalStorage the Start runtime owns, and the callable a test imports is the client-side RPC
+  stub, so one cannot be invoked from a test at all. Its three properties are checked the ways that
+  remain: the method off the stub, and the operator guard and the validator out of the source.
+  What that cannot reach is whether a schema is the *right* schema — only that input is validated
+  exactly when there is input. The one schema rule that would matter if it were wrong, refusing a
+  path that climbs out of the checkout, is enforced in `workspace-changes.ts` and tested there,
+  which is the right place for it: it protects every caller rather than one endpoint.
+- **Tailscale inside every workspace.** It adds enrollment credentials, node cleanup, another
+  readiness dependency, and another identity system. A Tailscale subnet router is a cleaner later
+  option when client machines cannot directly route to the agent subnet.
+- **A local Herdr bridge.** Specified and never built. The web UI removed the reason for it, and
+  Herdr itself is no longer part of the system.

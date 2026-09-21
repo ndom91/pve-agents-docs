@@ -1,0 +1,34 @@
+---
+title: Requirements
+description: What you need before the controller can build real containers.
+---
+
+To go past the queue and build real containers:
+
+- Node 22+ and pnpm
+- A Proxmox host with an API token, a pool, and a template built by
+  `deploy/build-workspace-template.sh`
+- A GitHub App, for cloning and pushing as an installation rather than as you
+- A Claude subscription token for the agents
+
+## The template
+
+Start from an immutable, stopped, unprivileged LXC template, intentionally large enough to avoid
+package installation during provisioning. See
+[the template model](/docs/operations/proxmox-lifecycle#template-model) for what goes in it and why
+editing a template in place does not work.
+
+## The two GitHub credentials
+
+`GITHUB_APP_*` and `GITHUB_CLIENT_*` are different credentials with different purposes, and they
+are easy to confuse:
+
+| | |
+|---|---|
+| `GITHUB_APP_*` | How the controller clones and pushes — as an installation, not as a person. |
+| `GITHUB_CLIENT_*` | How **you** sign in to the UI. Nothing else uses it. |
+
+## The agent credential
+
+`WORKSPACE_CLAUDE_OAUTH_TOKEN` comes from `claude setup-token`, which needs a browser and a Claude
+subscription. It is not an API key. Without it a workspace builds and the agent step fails.

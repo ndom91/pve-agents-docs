@@ -1,0 +1,5 @@
+{
+  "title": "Operations",
+  "icon": "Server",
+  "pages": ["production-runbook", "deploying", "proxmox-lifecycle"]
+}

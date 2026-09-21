@@ -1,0 +1,85 @@
+---
+title: Environment variables
+description: Every variable the controller reads, and what it decides.
+---
+
+The authoritative copy is `.env.example` in the repository, with the reasoning inline. This page
+is the same set, grouped.
+
+## Controller
+
+| | |
+|---|---|
+| `DATABASE_PATH` | Persistent controller state. The parent directory must exist and be writable. Defaults to `./data/controller.db`. |
+| `CONTROLLER_ID` | A stable deployment UUID. Part of every container's ownership marker. |
+| `CONTROLLER_HOST` | Listener address. Defaults to loopback; use a trusted LAN address only when required. |
+| `CONTROLLER_PORT` | Listener port. Defaults to `3000`. |
+| `CONTROLLER_URL` | Must **exactly** match the origin the browser uses. better-auth derives cookie and CSRF behaviour from it, so a mismatch produces sign-ins that appear to succeed and then have no session. |
+| `CONTROLLER_AUTH_SECRET` | Signs sessions and API keys. At least 32 characters. Unset means no authentication at all. |
+
+Generate the secret with:
+
+```bash
+head -c 48 /dev/urandom | base64 | tr -d '\n='
+```
+
+## Operator sign-in
+
+| | |
+|---|---|
+| `GITHUB_CLIENT_ID` | OAuth app, callback `<CONTROLLER_URL>/api/auth/callback/github`, scope `user:email`. |
+| `GITHUB_CLIENT_SECRET` | Its secret. |
+| `CONTROLLER_OPERATOR_GITHUB_ID` | The **numeric** account id — the only account that may ever sign in. Not the login: a login can be released and claimed by someone else. Find it with `curl -s https://api.github.com/users/<login> \| jq .id`. |
+
+## Proxmox
+
+`PROVISIONING_ENABLED` gates every Proxmox write and is `false` by default. Enabling it also
+requires the auth and GitHub settings above.
+
+| | |
+|---|---|
+| `PROXMOX_URL` | e.g. `https://pve.example.internal:8006/api2/json` |
+| `PROXMOX_TOKEN_ID` | e.g. `workspace-controller@pve!controller` |
+| `PROXMOX_TOKEN_SECRET` | The token secret. Never leaves the controller. |
+| `PROXMOX_NODE` | The node templates and clones live on. |
+| `PROXMOX_TEMPLATE_VMID` | The golden template. |
+| `PROXMOX_POOL` | Defaults to `disposable-workspaces`. |
+| `PROXMOX_BRIDGE` | e.g. `vmbr0` |
+| `PROXMOX_VMID_MIN` | Keeps disposable workspaces in their own band, away from hand-built guests. Proxmox has no "next free id at or above N", so the controller probes candidates upward from this floor. |
+
+## Repository access
+
+| | |
+|---|---|
+| `GITHUB_APP_ID` | How the controller clones and pushes — as an installation, not as a person. |
+| `GITHUB_APP_INSTALLATION_ID` | The number at the end of the URL after installing it. |
+| `GITHUB_APP_PRIVATE_KEY_PATH` | `0600`, owned by the service account. |
+| `GITHUB_TOKEN_REFRESH_SECONDS` | Replaced well before the hour is up, so a workspace is never holding an expired credential at the moment its agent decides to push. Defaults to `2400`. |
+
+## Worker
+
+| | |
+|---|---|
+| `WORKER_ENABLED` | Runs the operation worker inside the server process. Off by default so the first real clone and destroy are stepped by hand with `pnpm worker:tick`. |
+| `WORKER_INTERVAL_SECONDS` | Defaults to `5`. |
+
+## Workspaces
+
+| | |
+|---|---|
+| `WORKSPACE_SSH_USER` | Defaults to `agent`. |
+| `WORKSPACE_SSH_KEY_PATH` | The controller's private key. Only on the controller. |
+| `WORKSPACE_SUBNET` | Restricts address discovery to the workspace network, so a container's own bridge is never mistaken for its address. |
+| `WORKSPACE_CLAUDE_OAUTH_TOKEN` | From `claude setup-token`. Not an API key. Without it a workspace builds and the agent step fails. |
+| `WORKSPACE_PERMISSION_MODE` | Defaults to `auto` — a second model reviewing each action rather than a person. |
+| `WORKSPACE_ACTIVITY_INTERVAL_SECONDS` | How often each ready agent is read. Defaults to 30. |
+
+## Not in the environment
+
+Reaping — whether it is on, the idle timeout, the maximum age, the failed-workspace grace period —
+lives in the database and is configured from the settings page. It is read on every pass, so a
+change applies without a restart. See
+[configuration versus policy](/docs/getting-started/environment#configuration-versus-policy).
+
+`NODE_EXTRA_CA_CERTS` cannot live in the env file either: Node reads it before `--env-file` is
+processed, so the systemd unit sets it directly.

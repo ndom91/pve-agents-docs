@@ -1,0 +1,39 @@
+---
+title: Ownership
+description: The only thing that authorises destroying a container.
+---
+
+Every container carries a marker in its LXC description: the software name, the controller's id,
+the workspace id, and an ownership token, written atomically during the clone.
+
+**That description is the only thing that authorises destruction.** Pool membership, hostname and
+tags are discovery aids. Nothing is deleted without re-reading the marker immediately beforehand —
+including an orphan the operator clicked, because a VMID arriving in a form is a request rather
+than authorisation.
+
+```text
+pool=disposable-workspaces
+tag=workspace-controller
+description:
+  managed-by=pve-agents
+  controller-id=<deployment UUID>
+  workspace-id=<workspace UUID>
+  ownership-token=<random UUID>
+  created-at=<RFC3339 timestamp>
+```
+
+The description is the primary ownership proof because it can be supplied during clone.
+
+<Callout type="warn">
+`destroy_ownership_mismatch` in a halted destroy means a container did not carry this controller's
+ownership marker and was deliberately left untouched. Investigate by hand before retrying.
+</Callout>
+
+## Orphans are reported, never destroyed
+
+The settings page has a scan for containers this controller created and no longer has a record of.
+It runs only when asked.
+
+**Nothing about orphans runs on a timer**, because a restored or lost database makes every live
+workspace look orphaned and anything automatic would then destroy the fleet. It stays a scan and a
+click. Destroying one re-verifies the ownership marker server-side first.

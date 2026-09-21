@@ -1,0 +1,37 @@
+---
+title: The agent runner
+description: A detached node process inside each workspace, holding one Agent SDK session open.
+---
+
+A detached node process inside each workspace, holding one Agent SDK `query()` open for the life of
+the container and listening on a unix socket.
+
+**Reached over SSH with `nc -U`, not on a port.** A TCP listener would put an unauthenticated
+"drive this agent" endpoint on the workspace network and need its own authentication to close
+again. A socket reached over ssh inherits the key that already gates everything else.
+
+**Detached, not held by the controller.** A deploy restarts the controller, and an agent whose
+session lived in the controller's memory would lose its turn every time somebody shipped a change.
+`setsid` is what makes that true; the credentials are sourced explicitly in the same script,
+because `~/.config/agent-env` is hooked into `.bashrc` and a detached non-interactive process never
+reads it. Without that line the runner starts, listens, accepts prompts, and answers every one with
+"Not logged in".
+
+**Shipped by the controller, with only the SDK in the template.** The logic changes often and a
+template rebuild is a VMID swap; the dependency changes rarely and weighs about 245 MB. Containers
+are linked clones of one ZFS snapshot, so the template pays that once for the whole fleet. The
+runner finds the SDK through a `node_modules` symlink to the global root — `NODE_PATH` is a
+CommonJS mechanism and node's ESM resolver ignores it.
+
+**Attaching replays.** The snapshot carries the whole transcript and every parked approval, because
+a controller that restarts leaves approvals waiting inside a runner that is still alive, and a
+reader that only subscribed would show an idle agent that is actually waiting for an answer.
+
+**The transcript is not mirrored into the database.** It is replayed on attach. The cost, stated:
+destroying a workspace destroys its transcript. That was already true of the screen, and the
+timeline still records prompts, pushes and discards, so the record of what was *decided* survives.
+
+**Permissions default to `auto`** — a second model reviewing each action rather than a person —
+and the mode is configurable. Confirmed working on the subscription token. When auto mode is not
+available to a session, Claude Code silently runs Manual instead, which degrades safely here
+because every call then reaches the approval UI.

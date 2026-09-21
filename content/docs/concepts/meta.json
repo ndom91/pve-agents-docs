@@ -1,0 +1,12 @@
+{
+  "title": "Concepts",
+  "icon": "Blocks",
+  "pages": [
+    "architecture",
+    "provisioning",
+    "ownership",
+    "the-agent-runner",
+    "seeing-the-work",
+    "not-built"
+  ]
+}

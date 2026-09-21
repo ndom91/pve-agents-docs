@@ -1,0 +1,5 @@
+{
+  "title": "Reference",
+  "icon": "BookMarked",
+  "pages": ["http-api", "seed-files", "environment-variables"]
+}

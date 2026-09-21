@@ -1,0 +1,96 @@
+---
+title: Architecture
+description: The system as built, including where an earlier intention was abandoned and why.
+---
+
+Describes the system as built. Where an earlier intention was abandoned, the reason is stated
+rather than the intention quietly removed.
+
+## What a workspace is
+
+A request for work, not a request for a container.
+
+You supply a repository, a ref, and a purpose. The controller builds a disposable Proxmox LXC,
+checks the repository out into it, starts a Claude Code agent inside it, and gives that agent the
+purpose verbatim. The container is an implementation detail of that.
+
+One agent per workspace. An earlier plan had several; nothing needed them, and one agent per
+container keeps the ownership, credential, and teardown stories simple.
+
+## The interface, and two reversals
+
+The original architecture said the web UI should provide "fleet-level visibility" and "should not
+attempt to reproduce interactive terminal sessions", with interactive work happening in a Herdr
+client. **The first reversal** made the detail page the primary interface: the controller already
+had to read the agent's screen to know whether it was usable, and once a browser can see a screen,
+requiring a second tool to type into it is friction rather than separation.
+
+**The second reversal removed the screen.** The agent ran as a TUI in a Herdr pane; the controller
+read a rendered viewport every two seconds, inferred what the agent was doing from a status string,
+and answered permission dialogs by typing `1` into the pane. That was the only mechanism available
+to something reading a pane from outside.
+
+There is a real one. Under the Agent SDK's `query()`, a tool call that no rule resolves falls
+through to a **`canUseTool` callback** — async, so it can wait for a person, and able to deny with
+a message the model reads and works around. Conversation history arrives as typed SDK messages.
+
+So the centre column is a conversation rather than a terminal emulator, and approving a tool is a
+decision with a visible subject rather than a keystroke aimed at a box of text.
+
+**Herdr is gone.** Its pane was the only thing it was still providing, and the Terminal tab was
+already a plain `ssh -tt` rather than a Herdr session.
+
+## Planes
+
+**Provisioning.** The controller owns the infrastructure lifecycle: clone, boot, address, reach,
+bootstrap, check out, destroy. It holds a pool-scoped Proxmox token. Nothing else does.
+
+**Agent control.** A runner process inside each workspace holds one Claude Code Agent SDK session
+open and listens on a unix socket. The controller reaches it with `ssh -- nc -U`. See
+[the agent runner](/docs/concepts/the-agent-runner).
+
+**Human interface.** A dashboard: a sidebar of workspaces, the agent's conversation with a prompt
+below it, and a tabbed rail holding placement, the diff, the timeline and a shell.
+
+## Freshness
+
+Three reads at three cadences, which is a ratio rather than three arbitrary numbers:
+
+- The fleet list polls the database every 2.5s while anything can still change.
+- The activity pass reads each ready agent every 30s.
+- An open detail page streams its workspace over server-sent events, reading every 2s.
+
+The stream **writes what it observes to the database**, so the record everything else reads is
+fresh to about two seconds while a page is open. It previously pushed only to the browser, where
+the 2.5s database poll overwrote it with a 30-second-old value, and the controls for answering a
+dialog — gated on that value — were unusable as a result.
+
+Server-sent events rather than a socket: every write is request-and-answer and already works as a
+server function. A socket becomes right when there is keystroke-level input to stream upward.
+
+## A shell in the workspace
+
+The rail's **Terminal** tab opens an interactive shell in the container, over a WebSocket on the
+controller's own http server.
+
+This was previously listed as deliberately not built, on the grounds that a rendered viewport is
+not a byte stream, so a terminal emulator would be the wrong shape "until there is real keystroke
+input". There is now real keystroke input, so the condition the note set has been met rather than
+ignored.
+
+**A shell of its own, not the agent's session.** Poking about with `git log` must not put
+keystrokes into a session an agent is working in. The centre column is the agent's conversation;
+this is a separate login.
+
+**`ssh -tt` rather than a pty library.** The remote side allocates the tty, so there is no native
+module to build and nothing new on the workspace template. The cost is that the channel carries no
+`SIGWINCH`: the size is set once, in the remote command before the shell starts, and a browser
+resize does not follow it. Sending it afterwards would type `stty` at the operator's own prompt.
+
+`TERM` is set explicitly, because ssh forwards whatever it finds locally and the controller runs as
+a service with none. Without it every paged command stops at "terminal is not fully functional".
+
+**Authentication is the operator session**, through the same `authorizeRequest` every other
+endpoint uses. That function allows everything when `CONTROLLER_AUTH_SECRET` is unset, so an
+unconfigured controller hands out a shell on the same terms it hands out every page. It is a shell
+rather than a page, which is the reason to set the secret.

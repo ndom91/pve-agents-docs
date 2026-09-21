@@ -1,0 +1,357 @@
+@import "tailwindcss";
+@import "fumadocs-ui/css/neutral.css";
+@import "fumadocs-ui/css/preset.css";
+@import "./tokens.css";
+
+@font-face {
+  font-family: "geistMono";
+  src: url("/fonts/geistmono-variable.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Geist";
+  src: url("/fonts/Geist-Variable.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+/* The app's tokens are the source of truth for colour; everything below maps
+   fumadocs' --color-fd-* onto them so the docs and the product agree. Do not
+   introduce a hex here — if a colour is missing, add a token in tokens.css. */
+
+:root {
+  --font-sans: "Geist", system-ui, -apple-system, sans-serif;
+  --font-mono: "geistMono", ui-monospace, SFMono-Regular, monospace;
+  color-scheme: light dark;
+
+  --color-fd-background: var(--surface-base);
+  --color-fd-foreground: var(--text-primary);
+  --color-fd-muted: var(--surface-sunk);
+  --color-fd-muted-foreground: var(--text-secondary);
+  --color-fd-popover: var(--surface-raised);
+  --color-fd-popover-foreground: var(--text-primary);
+  --color-fd-card: var(--surface-raised);
+  --color-fd-card-foreground: var(--text-primary);
+  --color-fd-border: var(--line-border);
+  --color-fd-primary: var(--sage);
+  --color-fd-primary-foreground: var(--sage-ink);
+  --color-fd-secondary: var(--surface-sunk);
+  --color-fd-secondary-foreground: var(--text-primary);
+  --color-fd-accent: var(--sage-quiet);
+  --color-fd-accent-foreground: var(--text-primary);
+  --color-fd-ring: var(--focus-ring);
+  --color-fd-overlay: rgb(26 30 22 / 0.2);
+
+  --pa-soft-accent: var(--sage-quiet);
+  --pa-soft-accent-foreground: var(--green);
+  --pa-scrollbar-thumb: var(--line-strong);
+  --pa-scrollbar-track: var(--surface-base);
+}
+
+.dark {
+  --color-fd-overlay: rgb(0 0 0 / 0.55);
+
+  /* Dark sage is a pale mint. It is right as a button fill but too loud as
+     link text on the page, so prose accents step down to --green. */
+  --pa-soft-accent: var(--sage-quiet);
+  --pa-soft-accent-foreground: var(--sage);
+  --pa-scrollbar-thumb: var(--line-strong);
+  --pa-scrollbar-track: var(--surface-base);
+}
+
+/* The landing page is dark-only — it is a picture of the product, and the
+   product's own screenshots are dark. */
+html:has(.pa-root) {
+  color-scheme: dark;
+}
+
+:where(#nd-sidebar, #nd-sidebar-mobile) {
+  --color-fd-muted: var(--surface-sunk);
+  --color-fd-secondary: var(--surface-sunk);
+  --color-fd-muted-foreground: var(--text-muted);
+  --color-fd-accent: var(--pa-soft-accent);
+  --color-fd-accent-foreground: var(--pa-soft-accent-foreground);
+}
+
+:where(#nd-sidebar, #nd-sidebar-mobile) [data-active="true"] {
+  background-color: var(--pa-soft-accent);
+  color: var(--pa-soft-accent-foreground);
+}
+
+#nd-docs-layout {
+  --pa-sidebar-col: var(--fd-sidebar-width);
+}
+
+#nd-docs-layout[data-sidebar-collapsed="true"] {
+  --pa-sidebar-col: 0px;
+}
+
+/* Only reclaim the sidebar grid column when the page has room for the floating card. */
+@media (min-width: 1840px) {
+  #nd-docs-layout[data-sidebar-collapsed="false"] {
+    --pa-sidebar-col: 0px;
+  }
+
+  #nd-docs-layout[data-sidebar-collapsed="false"] #nd-sidebar {
+    width: var(--fd-sidebar-width);
+    inset-block: 0.5rem;
+    border: 1px solid var(--color-fd-border);
+    border-radius: var(--radius-xl);
+    transform: translateX(0.5rem);
+  }
+
+  [dir="rtl"] #nd-docs-layout[data-sidebar-collapsed="false"] #nd-sidebar {
+    transform: translateX(-0.5rem);
+  }
+}
+
+a:has(.pa-sidebar-github-link) {
+  width: auto;
+  min-width: 0;
+  padding-inline: 0.625rem;
+}
+
+.pa-sidebar-github-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.pa-sidebar-github-link svg {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+}
+
+.pa-sidebar-github-repo {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: -0.02em;
+  color: var(--color-fd-foreground);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* STYLE.md §7: every duration, timestamp, size, count and address is tabular,
+   so columns stop twitching as values tick. */
+code,
+kbd,
+pre,
+.font-mono,
+[class*="font-mono"] {
+  font-variant-numeric: tabular-nums;
+}
+
+::selection {
+  background: var(--pa-soft-accent);
+  color: var(--pa-soft-accent-foreground);
+}
+
+/* ── Docs images ──────────────────────────────────────────────────────
+   STYLE.md rule 9 is flat: no gradients, no glow, no shadow larger than a
+   1px border. The frame is a border and a surface step, nothing more. */
+
+.prose p:has(> [data-rmiz]:has(.pa-docs-image):only-child) {
+  margin-block: 2rem;
+}
+
+.prose p:has(> [data-rmiz]:has(.pa-docs-image):only-child) > [data-rmiz] {
+  margin-block: 0;
+}
+
+.prose [data-rmiz]:has(.pa-docs-image) {
+  margin-block: 2rem;
+  padding: clamp(0.5rem, 1.2vw, 0.875rem);
+  overflow: hidden;
+  border: 1px solid var(--line-border);
+  border-radius: var(--radius-xl);
+  background: var(--surface-sunk);
+}
+
+.prose .pa-docs-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0;
+  border: 1px solid var(--line-hairline);
+  border-radius: var(--radius-lg);
+  background: var(--surface-well);
+}
+
+.prose [data-rmiz]:has(.pa-docs-image) [data-rmiz-ghost] {
+  z-index: 1;
+}
+
+.prose [data-rmiz]:has(.pa-docs-image) [data-rmiz-btn-zoom] {
+  position: absolute;
+  inset-block-start: 0.75rem;
+  inset-inline-end: 0.75rem;
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: transparent;
+  cursor: zoom-in;
+  pointer-events: auto;
+}
+
+.prose [data-rmiz]:has(.pa-docs-image) [data-rmiz-btn-zoom]:focus-visible {
+  border-color: var(--line-border);
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+  background: var(--surface-raised);
+  color: var(--text-primary);
+}
+
+.prose [data-rmiz]:has(.pa-docs-image) [data-rmiz-btn-zoom-icon],
+.pa-docs-image-zoom-dialog [data-rmiz-btn-unzoom-icon] {
+  width: 1rem;
+  height: 1rem;
+}
+
+.pa-docs-image-zoom-dialog [data-rmiz-modal-overlay="visible"] {
+  background-color: color-mix(in srgb, var(--surface-well) 92%, rgb(0 0 0));
+}
+
+.pa-docs-image-zoom-dialog [data-rmiz-modal-img] {
+  border: 1px solid var(--line-border);
+  border-radius: var(--radius-xl);
+  background: var(--surface-raised);
+}
+
+.pa-docs-image-zoom-dialog [data-rmiz-btn-unzoom] {
+  position: absolute;
+  z-index: 1;
+  inset-block-start: 1rem;
+  inset-inline-end: 1rem;
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  place-items: center;
+  border: 1px solid var(--line-border);
+  border-radius: 999px;
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  cursor: zoom-out;
+}
+
+.pa-docs-image-zoom-dialog [data-rmiz-btn-unzoom]:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .prose [data-rmiz]:has(.pa-docs-image) {
+    padding: 0.375rem;
+    border-radius: var(--radius-lg);
+  }
+
+  .prose .pa-docs-image {
+    border-radius: var(--radius-md);
+  }
+}
+
+@media (forced-colors: active) {
+  .prose [data-rmiz]:has(.pa-docs-image),
+  .prose .pa-docs-image,
+  .prose [data-rmiz]:has(.pa-docs-image) [data-rmiz-btn-zoom],
+  .pa-docs-image-zoom-dialog [data-rmiz-btn-unzoom],
+  .pa-docs-image-zoom-dialog [data-rmiz-modal-img] {
+    border-color: CanvasText;
+    background: Canvas;
+    box-shadow: none;
+  }
+}
+
+.prose a[href^="http://"]:not(:has(img, svg)),
+.prose a[href^="https://"]:not(:has(img, svg)) {
+  --external-link-arrow-gap: 0.225em;
+  text-decoration: none;
+  padding-inline-end: var(--external-link-arrow-gap);
+  background-image: linear-gradient(var(--green), var(--green));
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 100% 1px;
+}
+
+.prose a[href^="http://"]:not(:has(img, svg))::after,
+.prose a[href^="https://"]:not(:has(img, svg))::after {
+  content: "\2197" / "";
+  position: relative;
+  display: inline;
+  inset-block-start: -0.175em;
+  inset-inline-start: var(--external-link-arrow-gap);
+  font-size: 0.8em;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* Project wordmark in the docs nav — the sage container mark plus the name. */
+.pa-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-lg);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--color-fd-foreground);
+}
+
+.pa-mark-glyph {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+  border: 1px solid var(--sage);
+  border-radius: var(--radius-xs);
+  background: var(--sage-quiet);
+}
+
+html {
+  scrollbar-gutter: stable;
+  scrollbar-color: var(--pa-scrollbar-thumb) var(--pa-scrollbar-track);
+  scrollbar-width: thin;
+}
+
+body,
+:where(#nd-sidebar) {
+  scrollbar-color: var(--pa-scrollbar-thumb) var(--pa-scrollbar-track);
+  scrollbar-width: thin;
+}
+
+@media (prefers-contrast: more) {
+  html {
+    --pa-scrollbar-thumb: var(--text-primary);
+    --pa-scrollbar-track: var(--surface-base);
+  }
+}
+
+@media (forced-colors: active) {
+  html,
+  body,
+  :where(#nd-sidebar) {
+    scrollbar-color: auto;
+  }
+}
+
+/* react-remove-scroll sets both of these inline when a dialog opens, to
+   compensate for a scrollbar that scrollbar-gutter has already reserved. The
+   result is the whole page shifting sideways. Only !important beats an inline
+   style, so the rule stays. */
+/* biome-ignore-start lint/complexity/noImportantStyles: overriding an inline style */
+html > body[data-scroll-locked] {
+  margin-right: 0px !important;
+  --removed-body-scroll-bar-size: 0px !important;
+}
+/* biome-ignore-end lint/complexity/noImportantStyles: overriding an inline style */

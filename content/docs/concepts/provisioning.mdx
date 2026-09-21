@@ -1,0 +1,84 @@
+---
+title: Provisioning and the scheduler
+description: One durable operation, one phase per pass, and the four passes that drive it.
+---
+
+A single durable operation advances one phase per pass, resuming from the database rather than
+from memory, so a controller that stops mid-clone picks up where it left off.
+
+```text
+requested → clone-submitted → clone-confirmed → start-submitted → booted
+          → addressed → reachable → bootstrapped → checked-out → seeded
+          → runner-started → briefed
+```
+
+`seeded` writes the operator's own files into the container — see
+[seed files](/docs/reference/seed-files). It sits after the checkout and before the runner
+deliberately: the files may be configuration the agent reads on the way up, and one of them is
+merged into a file the bootstrap wrote two phases earlier.
+
+Three phases became one when Herdr went. Starting a server, creating a workspace in it, and
+starting an agent in a pane were three round trips with three distinct failure vocabularies
+(`agent_name_taken`, `agent_not_ready`, `agent_prompt_stalled`) and a first-run wizard check on the
+end. A process either listens on its socket or it does not.
+
+`ready` means briefed and working, not merely built.
+
+Each phase is one Proxmox call or one SSH round trip.
+
+## What a workspace is called
+
+Two names, for two readers. The **hostname** — `agent-c397` — is the container's, generated from
+the workspace id, and it is what appears in Proxmox, in the branch a push lands on, and in an SSH
+command. The **title** is the agent's own six-word summary of what it was asked to do, which is
+what the sidebar shows.
+
+Asked for and stored once rather than recomputed. It rides back on the same round trip as the
+activity reading the scheduler already makes, so it costs nothing extra, and
+`recordWorkspaceTitle` writes it at most once per workspace: a name that changed as the work went
+on would make the sidebar a thing you have to re-read rather than scan.
+
+Absent is a normal state. A workspace whose agent has not answered yet, one requested without a
+purpose, and every workspace that predates naming all have none, and the UI falls back to the
+hostname rather than inventing anything.
+
+## The scheduler
+
+One loop, four passes in order, each awaited so they cannot overlap:
+
+<Steps>
+
+<Step>
+**Operations** — drains several queued lifecycle steps, bounded by count and elapsed time.
+Claimed by when an operation is next due, not when it was created; ordering by creation starved
+every request behind the first.
+</Step>
+
+<Step>
+**Activity** — reads what each ready agent is doing, at most every 30 seconds.
+</Step>
+
+<Step>
+**Credentials** — replaces git credentials before their hour is up.
+</Step>
+
+<Step>
+**Reaping** — destroys workspaces that have outlived their usefulness, if switched on.
+</Step>
+
+</Steps>
+
+Activity runs before reaping deliberately: reaping decides on the activity it records.
+
+## What the controller refuses to destroy
+
+Reaping is the only path that can lose something irreversibly, so it declines in three cases:
+
+- **A blocked agent**, which is waiting for a person. Exempt from both the idle limit and the
+  maximum age.
+- **Unsaved work** — uncommitted changes, or commits never pushed. Also exempt from both, because
+  exempting from idle alone would only postpone the loss to the cap.
+- **A workspace it cannot inspect.** "Could not tell" is not "nothing to lose".
+
+The cost is that a stray untracked file keeps a container alive indefinitely. The UI marks those
+workspaces, because the trade is only acceptable if it is visible.

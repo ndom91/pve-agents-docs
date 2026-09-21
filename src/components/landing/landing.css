@@ -1,0 +1,518 @@
+/* Landing page.
+ *
+ * Follows design/STYLE.md from the app: four surfaces, mono for machine facts
+ * and sans for prose, uppercase mono section labels, sage as the one action
+ * colour, and flat throughout — no gradients, no glow, no shadow bigger than
+ * a 1px border. Colours come from tokens.css; there are no hexes here.
+ *
+ * .pa-root takes the dark ramp unconditionally (see tokens.css).
+ */
+
+.pa-root {
+  min-height: 100vh;
+  background: var(--surface-base);
+  color: var(--text-body);
+  font-family: var(--font-sans);
+}
+
+.pa-shell {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 24px 96px;
+}
+
+/* ── Nav ───────────────────────────────────────────────────────────── */
+
+.pa-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--topbar-h);
+  margin-bottom: 72px;
+  border-bottom: 1px solid var(--line-hairline);
+}
+
+/* .pa-mark is defined in app.css against --color-fd-foreground, which follows
+   the DOCS theme. The landing is dark whatever the docs are set to, so it has
+   to take the ink from the token .pa-root itself redefines — otherwise the
+   wordmark is near-black on a near-black page while the docs are in light
+   mode. */
+.pa-root .pa-mark {
+  color: var(--text-primary);
+}
+
+.pa-nav-links,
+.pa-footer-links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.pa-nav-link {
+  font-family: var(--font-mono);
+  font-size: var(--text-label-lg);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-ui);
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color var(--dur-fast) var(--ease);
+}
+
+.pa-nav-link:hover,
+.pa-nav-link:focus-visible {
+  color: var(--text-primary);
+}
+
+/* ── Hero ──────────────────────────────────────────────────────────── */
+
+.pa-hero {
+  padding-bottom: 96px;
+}
+
+.pa-hero-title {
+  max-width: 20ch;
+  margin: 0 0 var(--space-7);
+  font-size: clamp(32px, 5.5vw, 52px);
+  font-weight: 500;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.pa-hero-sub {
+  max-width: 62ch;
+  margin: 0 0 40px;
+  font-size: var(--text-body-lg);
+  line-height: var(--leading-prose);
+  color: var(--text-secondary);
+}
+
+/* The request: three machine facts, the shape the product actually takes. */
+.pa-request {
+  border: 1px solid var(--line-border);
+  border-radius: var(--radius-xl);
+  background: var(--surface-well);
+}
+
+.pa-request-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-5);
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--line-inner);
+}
+
+.pa-request-row:last-child {
+  border-bottom: 0;
+}
+
+.pa-request-key {
+  flex: 0 0 72px;
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--text-muted);
+}
+
+.pa-request-val {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-body);
+}
+
+/* Types itself once, on load, then stops. A caret would still be blinking
+   after the line finished, which reads as "waiting for you" — it is not. */
+.pa-typed {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 6px solid var(--sage);
+  animation:
+    pa-type 1.8s steps(42) 0.3s both,
+    pa-caret 0.8s steps(1) 6 0.3s;
+}
+
+@keyframes pa-type {
+  from {
+    width: 0;
+  }
+  to {
+    width: 43ch;
+  }
+}
+
+@keyframes pa-caret {
+  0%,
+  49% {
+    border-right-color: var(--sage);
+  }
+  50%,
+  100% {
+    border-right-color: transparent;
+  }
+}
+
+/* ── Lifecycle rail ────────────────────────────────────────────────── */
+
+.pa-lifecycle {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  margin: 28px 0 40px;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--line-border);
+  border-radius: var(--radius-xl);
+  background: var(--line-inner);
+  overflow: hidden;
+}
+
+.pa-lifecycle-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-6);
+  background: var(--surface-raised);
+  /* Fills left to right, once, in step with the typed request above it. */
+  animation: pa-fill var(--dur-slow) var(--ease) both;
+  animation-delay: calc(2.1s + var(--i) * 0.18s);
+}
+
+@keyframes pa-fill {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.pa-lifecycle-step {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-label);
+  color: var(--text-decorative);
+}
+
+.pa-lifecycle-name {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono);
+  color: var(--green);
+}
+
+.pa-lifecycle-detail {
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-tight);
+  color: var(--text-muted);
+}
+
+/* ── Buttons ───────────────────────────────────────────────────────── */
+
+.pa-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+  margin-bottom: 56px;
+}
+
+.pa-btn {
+  display: inline-flex;
+  align-items: center;
+  height: var(--control-h-lg);
+  padding: 0 var(--space-8);
+  border: 1px solid var(--line-border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-body);
+  font-family: var(--font-mono);
+  font-size: var(--text-label-lg);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-ui);
+  text-decoration: none;
+  transition:
+    background-color var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease);
+}
+
+.pa-btn:hover {
+  background: var(--surface-hover);
+}
+
+/* STYLE.md rule 5: one primary action per surface. */
+.pa-btn-primary {
+  border-color: var(--sage);
+  background: var(--sage);
+  color: var(--sage-ink);
+}
+
+.pa-btn-primary:hover {
+  background: var(--sage);
+  filter: brightness(1.06);
+}
+
+.pa-btn:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* ── Sections ──────────────────────────────────────────────────────── */
+
+.pa-section {
+  padding-bottom: 96px;
+}
+
+/* STYLE.md rule 6: a section header is a label plus a hairline to the edge. */
+.pa-section-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  margin-bottom: var(--space-7);
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--text-muted);
+}
+
+.pa-section-label::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line-hairline);
+}
+
+.pa-section-title {
+  max-width: 28ch;
+  margin: 0 0 var(--space-6);
+  font-size: clamp(22px, 3vw, 30px);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+.pa-section-sub,
+.pa-aside {
+  max-width: 68ch;
+  margin: 0 0 32px;
+  font-size: var(--text-body-lg);
+  line-height: var(--leading-prose);
+  color: var(--text-secondary);
+}
+
+/* ── The loop ──────────────────────────────────────────────────────── */
+
+.pa-loop {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-8);
+  margin-top: 32px;
+}
+
+.pa-panel {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-8);
+  border: 1px solid var(--line-border);
+  border-radius: var(--radius-xl);
+  background: var(--surface-raised);
+}
+
+.pa-panel-label {
+  margin-bottom: var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--green);
+}
+
+.pa-panel-title {
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-title);
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--text-primary);
+}
+
+.pa-panel-body {
+  margin: 0;
+  font-size: var(--text-body-md);
+  line-height: var(--leading-prose);
+  color: var(--text-secondary);
+}
+
+/* Two rail tabs, side by side. Both source images are 800x1760, so the columns
+   stay the same height without any cropping. */
+.pa-rail {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-8);
+  margin-top: var(--space-8);
+}
+
+.pa-shot-rail figcaption {
+  padding: var(--space-5) var(--space-2) var(--space-1);
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-tight);
+  color: var(--text-muted);
+}
+
+/* ── Screenshots ───────────────────────────────────────────────────── */
+
+.pa-shot {
+  margin: auto 0 0;
+  padding: var(--space-2);
+  overflow: hidden;
+  border: 1px solid var(--line-border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-sunk);
+}
+
+.pa-shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--line-hairline);
+  border-radius: var(--radius-sm);
+}
+
+.pa-shot-hero,
+.pa-shot-wide {
+  margin-top: 16px;
+  padding: var(--space-3);
+  border-radius: var(--radius-xl);
+}
+
+/* ── Refusals ──────────────────────────────────────────────────────── */
+
+.pa-refusals {
+  display: grid;
+  gap: 1px;
+  margin-top: 32px;
+  border: 1px solid var(--line-border);
+  border-radius: var(--radius-xl);
+  background: var(--line-inner);
+  overflow: hidden;
+}
+
+.pa-refusal {
+  padding: var(--space-8);
+  background: var(--surface-raised);
+}
+
+.pa-refusal-title {
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-title);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.pa-refusal-body {
+  max-width: 76ch;
+  margin: 0;
+  font-size: var(--text-body-md);
+  line-height: var(--leading-prose);
+  color: var(--text-secondary);
+}
+
+/* ── Code ──────────────────────────────────────────────────────────── */
+
+.pa-code {
+  margin: 0 0 32px;
+  padding: var(--space-7);
+  overflow-x: auto;
+  border: 1px solid var(--line-border);
+  border-radius: var(--radius-xl);
+  background: var(--surface-well);
+  font-family: var(--font-mono);
+  font-size: var(--text-mono);
+  line-height: 1.8;
+  color: var(--text-body);
+}
+
+.pa-section-sub code,
+.pa-aside code {
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-xs);
+  background: var(--chip-neutral-bg);
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  color: var(--chip-neutral-text);
+}
+
+/* ── Footer ────────────────────────────────────────────────────────── */
+
+.pa-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+  padding-top: var(--space-8);
+  border-top: 1px solid var(--line-hairline);
+}
+
+/* ── Responsive ────────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .pa-loop,
+  .pa-rail {
+    grid-template-columns: 1fr;
+  }
+
+  .pa-lifecycle {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .pa-shell {
+    padding: 0 16px 64px;
+  }
+
+  .pa-lifecycle {
+    grid-template-columns: 1fr;
+  }
+
+  .pa-nav-links {
+    gap: var(--space-6);
+  }
+
+  .pa-request-row {
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .pa-request-val {
+    /* The typed line is sized in ch against a 43-character string; on a narrow
+       screen that overflows, so it wraps and the animation is dropped. */
+    white-space: normal;
+  }
+
+  .pa-typed {
+    width: auto;
+    animation: none;
+    border-right: 0;
+  }
+
+  .pa-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pa-typed {
+    width: auto;
+    animation: none;
+    border-right: 0;
+  }
+
+  .pa-lifecycle-item {
+    animation: none;
+    opacity: 1;
+  }
+}

@@ -1,0 +1,45 @@
+---
+title: Seeing and keeping the work
+description: The diff rail, and the two things you can do with what an agent changed.
+---
+
+The detail page's rail is tabbed. **Details** is placement. **Diff** is every changed file as one
+page, each row collapsed, unfolding its diff in place.
+
+This shape arrived third. The first replaced the whole rail with the file you opened, so reading a
+change cost you sight of everything else. The second gave each opened file a **tab of its own**,
+which fixed that and cost a click, a tab switch and a sideways-scrolling tab strip per file. The
+accordion is what a change set actually is: one list, read top to bottom, opened where you care.
+
+Flat rather than a tree, which is why `@pierre/trees` is no longer a dependency. The set is what
+one agent touched, usually a handful of files, and a full path already says where each one lives.
+The tree also virtualised against its own host box and rendered into shadow DOM, so it could not
+host a diff underneath a row — the whole feature.
+
+Each row fetches when it is unfolded and unmounts when it is folded. A read is an SSH round trip,
+so fetching every file to show a page of shut rows would open a connection per changed file; and
+the diff renderer carries a syntax highlighter, so several left mounted and hidden is several
+highlight passes' worth of DOM behind rows nobody has open.
+
+The rail is draggable from its left edge, because a diff wants more width than a sidebar has, and
+the width is remembered. It is bounded so it cannot be pulled over the terminal.
+
+Read as two file contents rather than as a patch. `git diff` says nothing at all about an untracked
+file, and an agent creating one is both the commonest change and the one that most often holds a
+workspace back from reaping, so a patch-shaped answer would have shown that case as nothing.
+
+## Push, or discard
+
+- **Push** commits everything and sends it to `pve-agents/<hostname>`, never the checked-out ref.
+  Unreviewed agent output must not reach `main` because somebody clicked quickly, and a side branch
+  is what makes the button safe enough to need no confirmation. A confirmation people learn to
+  dismiss protects nothing.
+- **Discard** resets the working tree, behind a confirmation naming the files it will destroy and
+  armed against that exact set. Commits survive it, so a workspace holding unpushed commits stays
+  held afterwards. Destroying commits is not something a button should do.
+
+Both re-read the tree afterwards, so the reaping protection releases at once rather than at the next
+pass, and both count as interaction.
+
+This is also what closes the loop the protection opened. Before it, a held workspace was held until
+somebody opened a terminal.

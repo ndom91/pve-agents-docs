@@ -1,0 +1,56 @@
+---
+title: pve-agents
+description: Disposable coding agents on your own Proxmox host.
+icon: Boxes
+---
+
+Give it a repository, a ref, and a purpose. It clones a golden template, boots an LXC, checks the
+repository out, starts a Claude Code agent inside it and hands it the purpose. The web UI streams
+that agent's transcript, takes prompts, answers its permission dialogs, shows what it changed, and
+pushes or discards the result. When a workspace has outlived its usefulness the controller destroys
+it — unless it is holding work nobody kept.
+
+The controller owns the lifecycle, the policy and the UI. Proxmox owns the containers. Claude Code
+owns the actual work.
+
+```text
+                You, in a browser
+                        │
+                        ▼
+                pve-agents :3000
+   request · stream · approve · diff · push · reap
+           │                          │
+           ▼                          ▼
+     Proxmox API                 workspace LXC
+ clone · boot · destroy      Claude Code · git checkout
+```
+
+Built for one operator on a trusted LAN. It holds a Proxmox token, a GitHub App key and a Claude
+subscription token, and it creates and destroys real containers.
+
+## What it does
+
+- **Start work from a sentence** — a repository, a ref and a purpose become a booted container with
+  an agent already working in it. No step in between is yours.
+- **Watch the agent think** — the transcript streams over SSE, tool calls and all, replayed from
+  the beginning for whoever opens the page late.
+- **Answer its questions** — permission prompts surface in the browser and are answered there,
+  rather than in a terminal somebody has to already be attached to.
+- **Read what changed** — per-file diffs in the rail, then push to `pve-agents/<hostname>` or
+  discard the lot.
+- **Drop into a real shell** — a full terminal into the workspace over `ghostty-web`, for the
+  things a transcript cannot do.
+- **Forget about cleanup** — idle workspaces are reaped automatically, and a workspace holding
+  uncommitted or unpushed work is exempt until you deal with it.
+- **Keep Proxmox honest** — containers the controller no longer recognises are reported, never
+  destroyed. A restored database does not cost you your fleet.
+- **Lock it down** — GitHub sign-in for the UI, hashed API keys for machines.
+
+## Where to go next
+
+| | |
+|---|---|
+| [Quick start](/docs/getting-started/quick-start) | Running locally in three commands, without a hypervisor. |
+| [Architecture](/docs/concepts/architecture) | The system as built, including where an earlier intention was abandoned and why. |
+| [Production runbook](/docs/operations/production-runbook) | Deploying and operating it. |
+| [HTTP API](/docs/reference/http-api) | Scripting the controller. |
