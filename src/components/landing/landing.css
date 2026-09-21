@@ -10,6 +10,8 @@
 
 .pa-root {
   min-height: 100vh;
+  /* The container field bleeds past the shell on the right. */
+  overflow-x: clip;
   background: var(--surface-base);
   color: var(--text-body);
   font-family: var(--font-sans);
@@ -76,21 +78,50 @@
 /* ── Hero ──────────────────────────────────────────────────────────── */
 
 .pa-hero {
+  position: relative;
   padding-bottom: 96px;
 }
 
+/* The container field sits behind everything in the hero, in the space the
+   narrowed headline gives back. It bleeds past the shell on the right for
+   scale; .pa-root clips the overflow so it cannot cause a sideways scroll. */
+.pa-field {
+  position: absolute;
+  z-index: 0;
+  inset-block-start: -56px;
+  inset-inline-end: -140px;
+  width: min(660px, 62vw);
+  height: 620px;
+  pointer-events: none;
+}
+
+.pa-field canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Everything else in the hero rides above it. */
+.pa-hero > *:not(.pa-field) {
+  position: relative;
+  z-index: 1;
+}
+
+/* Narrow enough to wrap to three lines and leave the right side to the field.
+   The measure is the point here, not the font size. */
 .pa-hero-title {
-  max-width: 20ch;
+  max-width: 15ch;
   margin: 0 0 var(--space-7);
   font-size: clamp(32px, 5.5vw, 52px);
   font-weight: 500;
   line-height: 1.12;
   letter-spacing: -0.02em;
   color: var(--text-primary);
+  text-wrap: balance;
 }
 
 .pa-hero-sub {
-  max-width: 62ch;
+  max-width: 46ch;
   margin: 0 0 48px;
   font-size: var(--text-body-lg);
   line-height: var(--leading-prose);
@@ -525,6 +556,20 @@
   .pa-loop,
   .pa-rail {
     grid-template-columns: 1fr;
+  }
+
+  /* No spare width to put it in: the headline already uses the full column,
+     so the field would sit under the text rather than beside it. */
+  .pa-field {
+    display: none;
+  }
+
+  .pa-hero-title {
+    max-width: 20ch;
+  }
+
+  .pa-hero-sub {
+    max-width: 62ch;
   }
 
   .pa-lifecycle {

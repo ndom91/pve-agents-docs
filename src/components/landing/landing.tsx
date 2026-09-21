@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Logo } from "@/components/logo";
 import { gitConfig } from "@/lib/shared";
+import { ContainerField } from "./container-field";
 import "./landing.css";
 
 const githubUrl = `https://github.com/${gitConfig.user}/${gitConfig.repo}`;
@@ -107,6 +108,7 @@ export function LandingPage() {
 
         {/* ===================== HERO ===================== */}
         <header className="pa-hero">
+          <ContainerField />
           <h1 className="pa-hero-title">
             Disposable coding agents on your own Proxmox host.
           </h1>
@@ -176,13 +178,12 @@ export function LandingPage() {
               introduces a screenshot whose sidebar reads "DESTROYED 15". */}
           <div className="pa-bridge">
             <p className="pa-bridge-lead">
-              Most of what it does is destroy things.
+              Ask for one, then forget it exists.
             </p>
             <p className="pa-bridge-body">
-              Idle workspaces are reaped on a timer. It will not reap one
-              holding uncommitted changes or unpushed commits, one whose agent
-              is waiting on you, or one it could not inspect — because “could
-              not tell” is not “nothing to lose”.
+              Read what the agent did, keep the branch or throw it away. Idle
+              containers are reaped without being asked, and one still holding
+              work you have not kept is left alone until you deal with it.
             </p>
           </div>
 
