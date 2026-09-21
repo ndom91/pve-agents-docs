@@ -52,4 +52,7 @@ pnpm deploy                # build, then publish to Cloudflare
 
 ## 📝 License
 
-[AGPL-3.0](LICENSE), matching the project it documents.
+[MIT](LICENSE).
+
+Note that this covers the site, not the thing it documents: **pve-agents itself is
+[AGPL-3.0](https://github.com/ndom91/pve-agents/blob/main/LICENSE)**.

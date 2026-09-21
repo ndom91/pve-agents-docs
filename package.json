@@ -5,7 +5,7 @@
   "sideEffects": false,
   "version": "0.0.1",
   "description": "Marketing and docs project for pve-agents",
-  "license": "AGPL-3.0-only",
+  "license": "MIT",
   "author": "ndom91 <yo@ndo.dev>",
   "homepage": "https://pve-agents.sh/",
   "bugs": "https://github.com/ndom91/pve-agents/issues",
