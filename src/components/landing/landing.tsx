@@ -71,6 +71,17 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   return <div className="pa-section-label">{children}</div>;
 }
 
+/** The tick in a lifecycle box. Draws itself when its step lands — see landing.css. */
+function Check() {
+  return (
+    <span className="pa-lifecycle-check">
+      <svg viewBox="0 0 12 12" focusable="false" aria-hidden="true">
+        <path d="M2.5 6.3 4.9 8.7 9.5 3.4" />
+      </svg>
+    </span>
+  );
+}
+
 export function LandingPage() {
   return (
     <div className="pa-root">
@@ -135,6 +146,7 @@ export function LandingPage() {
                 key={phase.name}
                 style={{ "--i": i } as React.CSSProperties}
               >
+                <Check />
                 <span className="pa-lifecycle-step">{phase.step}</span>
                 <span className="pa-lifecycle-name">{phase.name}</span>
                 <span className="pa-lifecycle-detail">{phase.detail}</span>

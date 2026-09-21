@@ -169,15 +169,24 @@
   overflow: hidden;
 }
 
+/* One beat per phase. Everything in a step — its fill, its box, its tick —
+   is delayed by --i beats off this, so retiming the sequence is one number. */
+.pa-lifecycle {
+  --pa-beat: 0.55s;
+  --pa-start: 2.1s;
+}
+
 .pa-lifecycle-item {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
   padding: var(--space-6);
+  padding-inline-end: 30px; /* room for the tick, so long detail text cannot run under it */
   background: var(--surface-raised);
   /* Fills left to right, once, in step with the typed request above it. */
   animation: pa-fill var(--dur-slow) var(--ease) both;
-  animation-delay: calc(2.1s + var(--i) * 0.18s);
+  animation-delay: calc(var(--pa-start) + var(--i) * var(--pa-beat));
 }
 
 @keyframes pa-fill {
@@ -186,6 +195,62 @@
   }
   to {
     opacity: 1;
+  }
+}
+
+/* ── The tick ──────────────────────────────────────────────────────── */
+
+.pa-lifecycle-check {
+  position: absolute;
+  inset-block-start: var(--space-5);
+  inset-inline-end: var(--space-5);
+  display: grid;
+  width: 13px;
+  height: 13px;
+  place-items: center;
+  border: 1px solid var(--line-border);
+  border-radius: var(--radius-xs);
+  color: var(--sage);
+  animation: pa-check-box var(--dur-base) var(--ease) both;
+  animation-delay: calc(var(--pa-start) + var(--i) * var(--pa-beat));
+}
+
+.pa-lifecycle-check svg {
+  width: 9px;
+  height: 9px;
+  overflow: visible;
+}
+
+/* The tick draws itself rather than appearing. 14 is a little over the path's
+   own length, so the line is fully hidden at the start and fully shown at the
+   end without having to measure it exactly. */
+.pa-lifecycle-check path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 14;
+  stroke-dashoffset: 14;
+  animation: pa-check-draw var(--dur-base) var(--ease) both;
+  /* A beat behind the box, so the box lights up and the tick lands in it. */
+  animation-delay: calc(var(--pa-start) + var(--i) * var(--pa-beat) + 0.1s);
+}
+
+@keyframes pa-check-box {
+  from {
+    border-color: var(--line-border);
+    background: transparent;
+  }
+  to {
+    border-color: var(--sage);
+    background: var(--sage-quiet);
+  }
+}
+
+@keyframes pa-check-draw {
+  to {
+    stroke-dashoffset: 0;
   }
 }
 
@@ -447,5 +512,17 @@
   .pa-lifecycle-item {
     animation: none;
     opacity: 1;
+  }
+
+  /* The end state, not the absence of one: every step still reads as done. */
+  .pa-lifecycle-check {
+    animation: none;
+    border-color: var(--sage);
+    background: var(--sage-quiet);
+  }
+
+  .pa-lifecycle-check path {
+    animation: none;
+    stroke-dashoffset: 0;
   }
 }
