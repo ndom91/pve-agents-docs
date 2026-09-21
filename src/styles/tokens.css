@@ -94,7 +94,15 @@
 
 /* .pa-root is the landing page, which is dark-only: it is a picture of the
    product, and every screenshot on it is dark. It takes the dark ramp even
-   when the docs are set to light. */
+   when the docs are set to light.
+
+   html:has(.pa-root) is the same ramp one level up, and it is not redundant:
+   the scrollbar is painted by the root element, and app.css sets
+   scrollbar-color from --line-strong. With the ramp only on the inner div,
+   html still resolved the LIGHT value and the landing got a pale scrollbar
+   against a dark page. An explicit scrollbar-color also beats color-scheme,
+   so declaring dark there was not enough on its own. */
+html:has(.pa-root),
 .dark,
 .pa-root {
   /* Surfaces — four levels of depth. Wells recede, raised things lift. */

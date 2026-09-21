@@ -60,11 +60,14 @@
   --pa-scrollbar-track: var(--surface-base);
 }
 
-/* The landing page is dark-only — it is a picture of the product, and the
-   product's own screenshots are dark. */
-html:has(.pa-root) {
-  color-scheme: dark;
-}
+/* The landing page is dark-only, but color-scheme is NOT how that is done.
+   fumadocs' theme provider writes style="color-scheme: light" inline on
+   <html>, and an inline style beats any rule here, so a declaration at this
+   level would simply never apply. The landing takes the dark ramp through
+   tokens.css instead, which lists html:has(.pa-root) alongside .dark — and
+   that is what gives the root element its dark scrollbar. Nothing on the
+   landing is a UA-styled control, so the mismatched color-scheme has nothing
+   left to affect. */
 
 :where(#nd-sidebar, #nd-sidebar-mobile) {
   --color-fd-muted: var(--surface-sunk);
