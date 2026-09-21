@@ -116,41 +116,43 @@ export function LandingPage() {
             Code agent inside it and hands it the purpose.
           </p>
 
-          <div
-            className="pa-request"
-            role="img"
-            aria-label="A workspace request: repository ndom91/pve-agents, ref main, purpose: port the reaper to the new operation queue"
-          >
-            <div className="pa-request-row">
-              <span className="pa-request-key">repo</span>
-              <span className="pa-request-val">ndom91/pve-agents</span>
+          <div className="pa-console">
+            <div
+              className="pa-request"
+              role="img"
+              aria-label="A workspace request: repository ndom91/pve-agents, ref main, purpose: port the reaper to the new operation queue"
+            >
+              <div className="pa-request-row">
+                <span className="pa-request-key">repo</span>
+                <span className="pa-request-val">ndom91/pve-agents</span>
+              </div>
+              <div className="pa-request-row">
+                <span className="pa-request-key">ref</span>
+                <span className="pa-request-val">main</span>
+              </div>
+              <div className="pa-request-row">
+                <span className="pa-request-key">purpose</span>
+                <span className="pa-request-val pa-typed" aria-hidden="true">
+                  Port the reaper to the new operation queue
+                </span>
+              </div>
             </div>
-            <div className="pa-request-row">
-              <span className="pa-request-key">ref</span>
-              <span className="pa-request-val">main</span>
-            </div>
-            <div className="pa-request-row">
-              <span className="pa-request-key">purpose</span>
-              <span className="pa-request-val pa-typed" aria-hidden="true">
-                Port the reaper to the new operation queue
-              </span>
-            </div>
-          </div>
 
-          <ol className="pa-lifecycle">
-            {lifecycle.map((phase, i) => (
-              <li
-                className="pa-lifecycle-item"
-                key={phase.name}
-                style={{ "--i": i } as React.CSSProperties}
-              >
-                <Check />
-                <span className="pa-lifecycle-step">{phase.step}</span>
-                <span className="pa-lifecycle-name">{phase.name}</span>
-                <span className="pa-lifecycle-detail">{phase.detail}</span>
-              </li>
-            ))}
-          </ol>
+            <ol className="pa-lifecycle">
+              {lifecycle.map((phase, i) => (
+                <li
+                  className="pa-lifecycle-item"
+                  key={phase.name}
+                  style={{ "--i": i } as React.CSSProperties}
+                >
+                  <Check />
+                  <span className="pa-lifecycle-step">{phase.step}</span>
+                  <span className="pa-lifecycle-name">{phase.name}</span>
+                  <span className="pa-lifecycle-detail">{phase.detail}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
 
           <div className="pa-hero-actions">
             <DocsLink
@@ -176,6 +178,10 @@ export function LandingPage() {
               loading="lazy"
               decoding="async"
             />
+            <figcaption>
+              What is running, what has been destroyed, and the form that starts
+              the next one.
+            </figcaption>
           </figure>
         </header>
 

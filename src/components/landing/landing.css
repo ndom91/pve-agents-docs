@@ -81,16 +81,25 @@
 
 .pa-hero-sub {
   max-width: 62ch;
-  margin: 0 0 40px;
+  margin: 0 0 48px;
   font-size: var(--text-body-lg);
   line-height: var(--leading-prose);
   color: var(--text-secondary);
 }
 
-/* The request: three machine facts, the shape the product actually takes. */
-.pa-request {
+/* The console: the request and the phases it produces, in ONE surface.
+   They were two bordered boxes with a gap, which read as two unrelated
+   things — the whole point is that the top half causes the bottom half.
+   The well/raised step across the divider carries that: the input recedes,
+   the result lifts. */
+.pa-console {
+  overflow: hidden;
   border: 1px solid var(--line-border);
   border-radius: var(--radius-xl);
+}
+
+/* The request: three machine facts, the shape the product actually takes. */
+.pa-request {
   background: var(--surface-well);
 }
 
@@ -160,13 +169,13 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1px;
-  margin: 28px 0 40px;
+  margin: 0;
   padding: 0;
   list-style: none;
-  border: 1px solid var(--line-border);
-  border-radius: var(--radius-xl);
+  /* The one line in the console that separates two groups rather than two
+     rows, so it is --line-border where the row dividers are --line-inner. */
+  border-top: 1px solid var(--line-border);
   background: var(--line-inner);
-  overflow: hidden;
 }
 
 /* One beat per phase. Everything in a step — its fill, its box, its tick —
@@ -276,24 +285,38 @@
 
 /* ── Buttons ───────────────────────────────────────────────────────── */
 
+/* The actions sat marooned: two 34px controls adrift in a 760px column,
+   equidistant from the console above and the screenshot below, and the only
+   thing on the page with a ragged right edge. The trailing hairline is the
+   same device the section headers use, so the row now spans the column and
+   reads as deliberate rather than unfinished. */
 .pa-hero-actions {
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-5);
-  margin-bottom: 56px;
+  margin: 36px 0 80px;
+}
+
+.pa-hero-actions::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  margin-inline-start: var(--space-4);
+  background: var(--line-hairline);
 }
 
 .pa-btn {
   display: inline-flex;
   align-items: center;
-  height: var(--control-h-lg);
-  padding: 0 var(--space-8);
+  flex: 0 0 auto;
+  height: 44px;
+  padding: 0 22px;
   border: 1px solid var(--line-border);
   border-radius: var(--radius-md);
   background: transparent;
   color: var(--text-body);
   font-family: var(--font-mono);
-  font-size: var(--text-label-lg);
+  font-size: var(--text-mono);
   text-transform: uppercase;
   letter-spacing: var(--tracking-ui);
   text-decoration: none;
@@ -410,6 +433,7 @@
   margin-top: var(--space-8);
 }
 
+.pa-shot figcaption,
 .pa-shot-rail figcaption {
   padding: var(--space-5) var(--space-2) var(--space-1);
   font-size: var(--text-body-sm);
@@ -436,8 +460,10 @@
   border-radius: var(--radius-sm);
 }
 
+/* No top margin of its own: the action row's 80px is the whole interval, and
+   the largest one on the page. It separates the pitch from the proof. */
 .pa-shot-hero {
-  margin-top: 16px;
+  margin-top: 0;
   padding: var(--space-3);
   border-radius: var(--radius-xl);
 }
@@ -479,9 +505,34 @@
     gap: var(--space-6);
   }
 
+  /* The buttons do not shrink, so on a narrow screen they would run off the
+     edge rather than wrap. Here they split the column instead, and the
+     trailing hairline goes: its whole job was to stop a short row looking
+     ragged, and a row that spans the column is not ragged. */
+  .pa-hero-actions {
+    flex-wrap: wrap;
+    margin-bottom: 56px;
+  }
+
+  .pa-hero-actions::after {
+    display: none;
+  }
+
+  .pa-btn {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
   .pa-request-row {
     flex-direction: column;
     gap: var(--space-1);
+  }
+
+  /* The key's flex-basis is a 72px label COLUMN. Once the row stacks, the main
+     axis is vertical and that basis becomes a 72px-tall label with the value
+     stranded below it. */
+  .pa-request-key {
+    flex: 0 0 auto;
   }
 
   .pa-request-val {
