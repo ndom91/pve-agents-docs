@@ -551,6 +551,86 @@
   border-radius: var(--radius-xl);
 }
 
+/* ── The hero slideshow ────────────────────────────────────────────────
+   The shots are stacked and cross-faded rather than swapped in flow. The
+   frame takes its height from the aspect ratio of the sources, which are
+   all 1899x1249, so the slide can change without moving anything below it. */
+
+.pa-slides {
+  position: relative;
+  aspect-ratio: 1899 / 1249;
+  overflow: hidden;
+  border: 1px solid var(--line-hairline);
+  border-radius: var(--radius-sm);
+  background: var(--surface-well);
+}
+
+.pa-slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  object-fit: cover;
+  object-position: top;
+  opacity: 0;
+  /* Slow on purpose. One shot is light and the others are dark, so a quick
+     swap reads as a flash; at this length it reads as the theme changing,
+     which is a thing the product actually does. */
+  transition: opacity 900ms var(--ease);
+}
+
+.pa-slide[data-active="true"] {
+  opacity: 1;
+}
+
+.pa-shot-hero figcaption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+}
+
+.pa-slide-dots {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.pa-slide-dot {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  /* The mark is 5px; the target around it is 22px. */
+  display: grid;
+  place-items: center;
+}
+
+.pa-slide-dot::after {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--line-strong);
+  transition: background-color var(--dur-base) var(--ease);
+}
+
+.pa-slide-dot[data-active="true"]::after,
+.pa-slide-dot:hover::after {
+  background: var(--sage);
+}
+
+.pa-slide-dot:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
 /* ── Footer ────────────────────────────────────────────────────────── */
 
 .pa-footer {
@@ -659,6 +739,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  /* The slideshow stops advancing on its own (see shot-slideshow.tsx); with
+     no crossfade either, the dots become an instant swap rather than nothing
+     happening. */
+  .pa-slide {
+    transition: none;
+  }
+
   .pa-typed {
     width: auto;
     animation: none;

@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Logo } from "@/components/logo";
 import { gitConfig } from "@/lib/shared";
 import { ContainerField } from "./container-field";
+import { type Shot, ShotSlideshow } from "./shot-slideshow";
 import "./landing.css";
 
 const githubUrl = `https://github.com/${gitConfig.user}/${gitConfig.repo}`;
@@ -29,6 +30,33 @@ const loop = [
     label: "Decide",
     title: "Read the diff, then push or discard",
     body: "Per-file diffs in the rail. Push to a branch of the workspace's own, or throw the lot away.",
+  },
+];
+
+/**
+ * The hero frame cycles through these. Ordered fleet → agent → timeline, so
+ * it reads as one workspace's life rather than three unrelated screens, and
+ * the light shot sits between the two dark ones so the theme alternates
+ * rather than changing once and staying.
+ */
+const heroShots: Shot[] = [
+  {
+    src: "/screenshots/home.png",
+    alt: "The fleet: one workspace running, forty-seven destroyed, and the form that requests the next one",
+    caption:
+      "What is running, what has been destroyed, and the form that starts the next one.",
+  },
+  {
+    src: "/screenshots/home1.png",
+    alt: "A workspace in light mode, the agent answering questions about the checked-out repository, with a banner saying it is holding unsaved work",
+    caption:
+      "The agent at work — and a workspace holding uncommitted changes, which is why it has not been reaped.",
+  },
+  {
+    src: "/screenshots/home2.png",
+    alt: "A workspace with its timeline open, showing requested, clone confirmed, booted, checked out, seeded and session started",
+    caption:
+      "Every phase of the build, timed, down to the brief it was handed.",
   },
 ];
 
@@ -188,18 +216,7 @@ export function LandingPage() {
             </p>
           </div>
 
-          <figure className="pa-shot pa-shot-hero">
-            <img
-              src="/screenshots/home.png"
-              alt="The pve-agents home screen, listing active workspaces"
-              loading="lazy"
-              decoding="async"
-            />
-            <figcaption>
-              What is running, what has been destroyed, and the form that starts
-              the next one.
-            </figcaption>
-          </figure>
+          <ShotSlideshow shots={heroShots} />
         </header>
 
         {/* ===================== THE LOOP ===================== */}
