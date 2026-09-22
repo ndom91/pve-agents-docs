@@ -64,6 +64,18 @@
   color: var(--text-primary);
 }
 
+/* Touch targets. These links are 16px of text — fine under a cursor, too
+   small under a thumb, and below the 24px WCAG 2.5.8 floor. The hit area
+   grows; the type does not. Keyed on pointer rather than width, because a
+   wide tablet has the same thumb as a narrow phone. */
+@media (pointer: coarse) {
+  .pa-nav-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+}
+
 /* Focus is split out of the hover rule deliberately. Sharing it meant focus
    was a colour change and nothing else, so Chrome's own blue ring showed
    through on all six nav and footer links while the two buttons used the sage
@@ -562,6 +574,16 @@
      so the field would sit under the text rather than beside it. */
   .pa-field {
     display: none;
+  }
+
+  /* The rail sources are 800x1760 and only the top half carries content, so
+     at full column width each one became an 801px figure — a whole phone
+     screen, mostly empty, twice. Cropping to the part that has something in
+     it takes ~650px off the page. */
+  .pa-shot-rail img {
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    object-position: top;
   }
 
   .pa-hero-title {
