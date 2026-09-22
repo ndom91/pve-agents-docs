@@ -11,9 +11,17 @@ export const docsImageRoute = "/og/docs";
  */
 export const siteUrl = "https://pve-agents.sh";
 
-/** Absolute URL for a path, for the tags that cannot take a relative one. */
+/**
+ * Absolute URL for a path, for the tags that cannot take a relative one.
+ *
+ * The root is `https://pve-agents.sh` with NO trailing slash. A canonical is
+ * matched as a literal string, so the slashed and unslashed forms are two
+ * different URLs to a crawler, and declaring one while linking the other is
+ * the mistake this exists to avoid.
+ */
 export function absoluteUrl(path = "/") {
-  return `${siteUrl}${path.startsWith("/") ? path : `/${path}`}`;
+  const suffix = path === "/" ? "" : path.startsWith("/") ? path : `/${path}`;
+  return `${siteUrl}${suffix}`;
 }
 
 export const gitConfig = {

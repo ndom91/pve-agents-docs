@@ -13,6 +13,10 @@ const docsLayoutStyle = {
   "--fd-sidebar-col": "var(--pa-sidebar-col)",
 } as CSSProperties;
 
+/* The same preview the landing page uses. A docs page has no image of its
+   own, and a card with no image collapses to a bare link in most clients. */
+const previewImage = absoluteUrl("/screenshots/home.png");
+
 export const Route = createFileRoute("/docs/$")({
   component: Page,
   loader: async ({ params }) => {
@@ -31,19 +35,26 @@ export const Route = createFileRoute("/docs/$")({
       ? `${loaderData.title} — ${appName}`
       : appName;
 
+    const description = loaderData?.description;
+
     return {
       meta: [
         { title },
-        ...(loaderData?.description
+        ...(description
           ? [
-              { name: "description", content: loaderData.description },
-              { property: "og:description", content: loaderData.description },
+              { name: "description", content: description },
+              { property: "og:description", content: description },
+              { name: "twitter:description", content: description },
             ]
           : []),
         { property: "og:type", content: "article" },
         { property: "og:site_name", content: appName },
         { property: "og:title", content: title },
         { property: "og:url", content: absoluteUrl(path) },
+        { property: "og:image", content: previewImage },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:image", content: previewImage },
       ],
       links: [{ rel: "canonical", href: absoluteUrl(path) }],
     };
