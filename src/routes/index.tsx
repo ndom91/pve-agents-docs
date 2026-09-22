@@ -2,9 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { LandingPage } from "@/components/landing/landing";
 import { absoluteUrl, appName } from "@/lib/shared";
 
-const title = "pve-agents — disposable coding agents on your own Proxmox host";
+/* These three are the hero, restated for a search result and a link preview.
+   They feed the title, the meta description, og: and twitter: — so they must
+   not drift from the h1 and sub in landing.tsx. */
+const title = "pve-agents — self-hosted sandboxes for coding agents";
 const description =
-  "Give it a repository, a ref and a purpose. It boots a disposable Proxmox LXC, checks the repository out, and starts a Claude Code agent inside it — streamed, approvable and reaped when it is done.";
+  "Give it a repository, a ref and a purpose. It builds a disposable LXC on your Proxmox host, starts a Claude Code agent inside it, and streams the whole thing to your browser.";
 
 /* The home screen doubles as the social preview. It is the only image on the
    site that shows the whole product at once. */

@@ -138,12 +138,12 @@ export function LandingPage() {
         <header className="pa-hero">
           <ContainerField />
           <h1 className="pa-hero-title">
-            Disposable coding agents on your own Proxmox host.
+            Self-hosted sandboxes for coding agents.
           </h1>
           <p className="pa-hero-sub">
-            Give it a repository, a ref, and a purpose. It clones a golden
-            template, boots an LXC, checks the repository out, starts a Claude
-            Code agent inside it and hands it the purpose.
+            Give it a repository, a ref and a purpose. It builds a disposable
+            LXC on your Proxmox host, starts a Claude Code agent inside it, and
+            streams the whole thing to your browser.
           </p>
 
           <div className="pa-console">
