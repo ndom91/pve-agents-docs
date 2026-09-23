@@ -12,8 +12,11 @@ watching an agent from something that is not a browser.
 Send `x-api-key: <key>`. Create a key with:
 
 ```bash
-pnpm apikey:create
+pnpm build          # apikey:create runs dist/cli/apikey.js, so build it first
+pnpm apikey:create <name>
 ```
+
+It is printed once and stored only as a hash. There is no way to read it back.
 
 <Callout type="warn">
 **Every route below requires it, except `GET /api/health`.** With `CONTROLLER_AUTH_SECRET` unset

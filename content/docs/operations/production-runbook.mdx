@@ -9,6 +9,10 @@ description: Preflight, systemd, operation, and the settings that need a running
 
 <Step>
 Run `pnpm check`, `pnpm typecheck`, `pnpm test`, and `pnpm build` from a clean checkout.
+
+`pnpm build` is a prerequisite rather than a formality: `apikey:create`, `db:migrate` and
+`worker:tick` all run files under `dist/cli/`, so every later step that invokes one fails without
+it.
 </Step>
 
 <Step>
