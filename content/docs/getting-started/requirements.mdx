@@ -11,12 +11,19 @@ To go past the queue and build real containers:
 - A GitHub App, for cloning and pushing as an installation rather than as you
 - A Claude subscription token for the agents
 
+[Proxmox setup](/docs/getting-started/proxmox-setup) walks the hypervisor side of that in order,
+including the two things that are easy to reach the end without: the controller's SSH key, and the
+first template.
+
 ## The template
 
 Start from an immutable, stopped, unprivileged LXC template, intentionally large enough to avoid
 package installation during provisioning. See
 [the template model](/docs/operations/proxmox-lifecycle#template-model) for what goes in it and why
 editing a template in place does not work.
+
+You do not need one already. `deploy/build-workspace-template.sh` builds the first from a stock
+Ubuntu 24.04 image, and every one after that from the template in service.
 
 ## The two GitHub credentials
 

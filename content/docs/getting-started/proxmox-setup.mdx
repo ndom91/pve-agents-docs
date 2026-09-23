@@ -1,0 +1,154 @@
+---
+title: Proxmox setup
+description: Everything between a bare Proxmox host and a controller that can clone.
+---
+
+Done once, on the Proxmox host, before the controller is pointed at anything. Five of these six
+steps are minutes of clicking; the sixth builds the template and takes a while.
+
+None of it is needed to try the UI. With `PROVISIONING_ENABLED` off — the default — a request
+queues a durable operation and builds nothing. See the
+[quick start](/docs/getting-started/quick-start).
+
+## The pool
+
+Create a pool named `disposable-workspaces`. Every container the controller builds is placed in it,
+and the orphan scan compares that pool against the controller's own records.
+
+```bash
+pvesh create /pools --poolid disposable-workspaces
+```
+
+The name is not magic — `PROXMOX_POOL` sets it — but pick it before the token, because the token is
+scoped to it.
+
+<Callout>
+Pool membership is a discovery aid, not permission. Nothing is destroyed on the strength of it; see
+[ownership](/docs/concepts/ownership) for what actually authorises a delete.
+</Callout>
+
+## The user and the API token
+
+A dedicated user and a privilege-separated API token, scoped narrowly. The controller holds this
+token and nothing else does — it never reaches a workspace, and no agent can ask for it.
+
+<Steps>
+
+<Step>
+Create the user and a role holding exactly the privileges the controller uses. The full list, and
+the reason each is on it, is in [credentials](/docs/security/credentials#proxmox).
+</Step>
+
+<Step>
+Create an API token for that user with **privilege separation on**, and give the *token* the role
+rather than relying on the user's own permissions. Privilege separation is the point: a leaked
+token should not carry whatever the user later gets granted.
+</Step>
+
+<Step>
+Scope the role to the pool, the clone storage, and the bridge or VNet. Do not grant it at `/`.
+</Step>
+
+<Step>
+Put the token id and secret in `.env` as `PROXMOX_TOKEN_ID` and `PROXMOX_TOKEN_SECRET`, along with
+`PROXMOX_URL`, `PROXMOX_NODE` and `PROXMOX_POOL`.
+</Step>
+
+</Steps>
+
+The template VMID needs `VM.Audit` and `VM.Clone` too, and it does not exist yet. That grant is the
+last step on this page.
+
+## The network
+
+Workspaces want their own VLAN or subnet, with DHCP and outbound NAT and no inbound access from
+anywhere. The shape, and the firewall policy that goes with it, is in
+[networking](/docs/security/networking).
+
+Two properties are load-bearing rather than advisory:
+
+- **DHCP has to work on that bridge.** Address discovery polls the LXC interfaces endpoint for
+  whatever the container was given. A container that never gets an address fails at the `addressed`
+  phase, and the failure reads as a boot problem.
+- **The controller must be able to reach port 22 on that subnet.** It is the only thing that
+  should be able to.
+
+Set `PROXMOX_BRIDGE` to the bridge name, and `PROXMOX_VMID_MIN` to keep disposable workspaces in
+their own band away from hand-built guests.
+
+## The controller's SSH key
+
+The controller reaches every workspace with one key that exists on the controller and nowhere else.
+Generate it now, because the template bakes the public half.
+
+```bash
+# On the controller, as the service account.
+ssh-keygen -t ed25519 -N '' -C pve-agents-controller \
+  -f /var/lib/pve-agents/ssh/id_pve_agents_controller
+chmod 0600 /var/lib/pve-agents/ssh/id_pve_agents_controller
+```
+
+Point `WORKSPACE_SSH_KEY_PATH` at the private half and set `WORKSPACE_SSH_USER=agent`. Copy the
+public half to the Proxmox host at `/root/id_pve_agents_controller.pub`, which is where the
+template build script looks for it.
+
+<Callout type="warn">
+**Rotating this key means rebuilding the template.** The public half is written into the template's
+`authorized_keys`, so a new key reaches new workspaces only after a rebuild, and every workspace
+already running keeps answering to the old one.
+</Callout>
+
+## The golden template
+
+The template is deliberately large: everything an agent might need is installed once, so
+provisioning never waits on a package manager. What goes in it, and why editing one in place does
+not work, is in [the template model](/docs/operations/proxmox-lifecycle#template-model).
+
+`deploy/build-workspace-template.sh` builds it, on the Proxmox host, as root. It has two modes.
+
+### The first template
+
+There is nothing to clone yet, so build from a stock Ubuntu 24.04 image. Download it first:
+
+```bash
+pveam update
+pveam download local ubuntu-24.04-standard_24.04-2_amd64.tar.zst
+```
+
+Then build, with `SOURCE_VMID` explicitly empty — that is what selects bootstrap mode:
+
+```bash
+SOURCE_VMID= NEW_VMID=120 ./deploy/build-workspace-template.sh
+```
+
+Expect it to take a while: it installs a toolchain, two language runtimes and the Agent SDK, which
+alone is about 245 MB. Nothing is interactive.
+
+### Every template after the first
+
+The default is a rebuild from the template already in service, so it starts from what is known to
+work rather than from whichever ancestor happens to still exist:
+
+```bash
+NEW_VMID=121 ./deploy/build-workspace-template.sh
+```
+
+The source is never modified. A bad build costs one VMID.
+
+<Callout>
+**A build that provisions and then fails its checks is kept, not destroyed.** The script prints how
+to inspect it and how to remove it. Only a failure *before* provisioning finishes cleans up after
+itself, because that is the case where there is nothing to look at.
+</Callout>
+
+## Point the controller at it
+
+Set `PROXMOX_TEMPLATE_VMID` to the new VMID and grant the token `VM.Audit` and `VM.Clone` on
+`/vms/<vmid>`. Without that grant the first clone fails with a 403, and the token is the last thing
+anyone suspects.
+
+Then set `PROVISIONING_ENABLED=true` and restart. The controller refuses to start with provisioning
+on unless `CONTROLLER_AUTH_SECRET` is set, which is the intended order: authentication before
+anything can be built.
+
+Next: [your first workspace](/docs/getting-started/first-workspace).

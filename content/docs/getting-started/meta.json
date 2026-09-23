@@ -1,5 +1,11 @@
 {
   "title": "Getting started",
   "icon": "Rocket",
-  "pages": ["quick-start", "requirements", "environment"]
+  "pages": [
+    "quick-start",
+    "requirements",
+    "environment",
+    "proxmox-setup",
+    "first-workspace"
+  ]
 }

@@ -22,9 +22,17 @@ openssh-server
 normal shell and build tooling
 ```
 
-Build it with `deploy/build-workspace-template.sh`, which clones an existing template, provisions
-the clone, and converts that into a new one. Editing a template in place does not work: linked
-clones come from its `@__base__` ZFS snapshot, so changes to the live dataset reach nothing.
+The build verifies that whole list before converting, so a template that exists is one that has all
+of it.
+
+Build it with `deploy/build-workspace-template.sh`, which provisions a scratch container and
+converts that into a new template. Editing a template in place does not work: linked clones come
+from its `@__base__` ZFS snapshot, so changes to the live dataset reach nothing.
+
+The usual mode clones the template already in service, so a rebuild starts from what is known to
+work rather than from whichever ancestor happens to still exist. The first template on a fresh host
+has nothing to clone and is built from a stock Ubuntu 24.04 image instead — see
+[Proxmox setup](/docs/getting-started/proxmox-setup#the-golden-template) for both invocations.
 
 Install the agent tooling as the workspace user, not root. Tooling under `/root` is not on the
 workspace user's PATH, which makes it invisible to everything the controller does over SSH.
