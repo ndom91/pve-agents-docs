@@ -1,0 +1,78 @@
+---
+title: Contributing
+description: Working on the controller or on these docs, and the licences on each.
+icon: GitPullRequest
+---
+
+Two repositories. The controller is the application; this site is separate and has its own build.
+
+## The controller
+
+```bash
+pnpm install
+cp .env.example .env
+pnpm dev                   # http://127.0.0.1:3000
+```
+
+`PROVISIONING_ENABLED` is off by default, so a request queues a durable operation and builds
+nothing. The whole state machine, the API and the UI can be exercised without a hypervisor anywhere
+near it.
+
+Before opening a pull request:
+
+```bash
+pnpm check && pnpm typecheck && pnpm test && pnpm build
+```
+
+<Callout type="warn">
+**None of those load a page.** All four have passed against a build whose client bundle threw
+during hydration and rendered nothing but an error box. After anything touching `src/router.tsx`,
+routing or SSR, open the site and look at it.
+</Callout>
+
+`AGENTS.md` in the repository root is the file to read before changing code. It holds the
+conventions and the rules this codebase learned the hard way, and it is kept current in a way a
+contributing guide would not be.
+
+**Dependencies are pinned exactly.** The deploy deletes `node_modules` every time, so a floating
+specifier means a deploy can install something other than what last worked with nothing in the diff
+to show for it. Treat a wide peer range as no guarantee at all — see
+[deploying](/docs/operations/deploying) for the one that cost a day.
+
+## These docs
+
+```bash
+pnpm install
+pnpm dev                   # http://localhost:3000
+pnpm lint
+pnpm types:check
+pnpm build                 # prerender to .output/public
+```
+
+Content is MDX under `content/docs`. To add a page, put the file in a section directory and add its
+slug to the `meta.json` beside it. The sidebar, `sitemap.xml`, `llms.txt` and the plain-markdown
+twin of every page all generate from that same source, so a page missing from `meta.json` is
+missing from all of them at once.
+
+`content/drafts/` is collected by nothing. A file there is not merely absent from the sidebar — it
+is unbuilt, unindexed and unreachable by URL.
+
+Colours come from `src/styles/tokens.css`, a copy of the controller's own tokens with only the
+theme selectors changed. Do not add a hex; if a colour is missing, add a token.
+
+The landing page is `src/components/landing/` and is deliberately not built from the docs
+components. It renders through an SPA shell, so a build that passes every check can still serve an
+empty page. Open it.
+
+## Licences
+
+| | |
+|---|---|
+| The controller | [AGPL-3.0](https://github.com/ndom91/pve-agents/blob/main/LICENSE) |
+| This documentation site | [MIT](https://github.com/ndom91/pve-agents-docs/blob/main/LICENSE) |
+
+## On how it was built
+
+This project was developed with significant assistance from LLMs. Architecture decisions,
+implementation and documentation were all shaped through human-AI collaboration. Said plainly
+because it is visible in the work and worth knowing before you read the code.
