@@ -1,0 +1,133 @@
+---
+title: Troubleshooting
+description: Symptoms, in the words you actually have in front of you, and what each one means.
+---
+
+Every failure here is explained in full somewhere else on this site. This page exists so it can be
+found by the string on the screen rather than by knowing which chapter it belongs to.
+
+They are grouped by where you are standing when it happens.
+
+## The controller will not behave
+
+**A stream connects, returns 200, stays open, and delivers nothing.**
+A reverse proxy is compressing or buffering a path that must be excluded from both. gzip holds a
+stream that never fills a buffer, and nothing in any log says so. This works perfectly against the
+port directly and fails only behind the proxy, so test at the real hostname.
+→ [Reverse proxy](/docs/operations/production-runbook#reverse-proxy)
+
+**Sign-in appears to succeed and then there is no session.**
+`CONTROLLER_URL` does not exactly match the origin the browser uses. better-auth derives cookie and
+CSRF behaviour from it, so a scheme, a port or a trailing slash is enough.
+→ [Production runbook](/docs/operations/production-runbook)
+
+**The controller reports itself healthy but requests fail on the schema.**
+`pnpm db:migrate` was skipped. Migrations also run lazily on the first request that touches the
+database, so a deploy that skips them passes its health check on the old schema and surfaces the
+failure as a broken request instead of a failed deploy.
+→ [Migrations](/docs/operations/production-runbook#migrations)
+
+**`controller did not exit cleanly, forcing` in the journal.**
+Something new is holding the event loop past shutdown. The five-second fallback has covered for it.
+Worth finding rather than living with.
+→ [Shutdown](/docs/operations/production-runbook#shutdown)
+
+**Nothing ever leaves `requested`.**
+No worker is running. `WORKER_ENABLED` is off by default; run `pnpm worker:tick`, or turn it on.
+→ [Your first workspace](/docs/getting-started/first-workspace)
+
+## A command will not run
+
+**A CLI entrypoint fails before it does anything.**
+`pnpm worker:tick`, `pnpm apikey:create` and `pnpm db:migrate` all run files under `dist/cli/`.
+Build them first:
+
+```bash
+pnpm build          # both bundles
+pnpm build:cli      # just the CLI
+```
+
+**`pnpm: command not found`, part-way through a deploy.**
+Removing `node_modules` took pnpm's shims with it. Use `corepack pnpm` from that point on.
+→ [Deploying](/docs/operations/deploying)
+
+**A deploy builds and fails on a missing Vite.**
+The previous deploy ended with `pnpm prune --prod`, so `pnpm install --frozen-lockfile` reports
+"Already up to date" and does not restore devDependencies. `rm -rf node_modules` first — this is
+why the script does.
+→ [Deploying](/docs/operations/deploying)
+
+**Everything passes and the UI is an error box.**
+Hydration threw. `check`, `typecheck`, `test` and `build` do not load a page and cannot catch this.
+A person has to open the site — especially after anything touching `src/router.tsx`, routing or SSR.
+→ [Deploying](/docs/operations/deploying)
+
+## A workspace will not build
+
+**`destroy_ownership_mismatch`, and the destroy has halted.**
+A container did not carry this controller's ownership marker, so it was deliberately left untouched.
+Investigate by hand before retrying. Do not clear the flag to get past it.
+→ [Ownership](/docs/concepts/ownership)
+
+**The first clone fails with a 403.**
+The Proxmox token does not hold `VM.Audit` and `VM.Clone` on the template VMID. A rebuild produces
+a new VMID, and the grant does not follow it.
+→ [Proxmox setup](/docs/getting-started/proxmox-setup)
+
+**Provisioning fails at `addressed`.**
+The container booted and never got a DHCP lease. The controller polls the LXC interfaces endpoint
+for whatever Proxmox reports, and ignores loopback, link-local, and anything outside the expected
+subnet.
+→ [Networking](/docs/security/networking)
+
+**The agent answers every prompt with "Not logged in".**
+The runner started without its credentials. `~/.config/agent-env` is hooked into `.bashrc`, which a
+detached non-interactive process never reads, so the runner sources it explicitly. If that line is
+missing the runner starts, listens, accepts prompts, and fails every one.
+→ [The agent runner](/docs/concepts/the-agent-runner)
+
+**The runner dies at start with `ERR_MODULE_NOT_FOUND`.**
+The Agent SDK is not where the runner resolves it. It lives in the template's global root and is
+reached through a `node_modules` symlink — `NODE_PATH` does not work, because it is a CommonJS
+mechanism and node's ESM resolver ignores it. The template build verifies this before converting;
+a template built any other way can pass every other check and fail here.
+→ [The agent runner](/docs/concepts/the-agent-runner)
+
+## A template will not build
+
+**`container has no DNS; check the bridge and DHCP`.**
+The scratch container came up without a working network. Nothing after that point can install
+anything.
+→ [Networking](/docs/security/networking)
+
+**`<image> is not downloaded`.**
+Bootstrap mode needs the base image present on the host. The script prints the exact
+`pveam download` to run.
+→ [Proxmox setup](/docs/getting-started/proxmox-setup#the-golden-template)
+
+**`<vmid> is not a template`.**
+The source for a rebuild must be an existing template. For the *first* template there is nothing to
+clone: pass `SOURCE_VMID=` empty to build from a stock image instead.
+→ [Proxmox setup](/docs/getting-started/proxmox-setup#the-first-template)
+
+**The build stops at `missing: <tool>` and keeps the container.**
+Verification ran and something is not on the workspace user's PATH without a login shell, which is
+how the controller reaches everything over SSH. Tooling installed under `/root` is the usual cause.
+The container is kept precisely so it can be inspected:
+
+```bash
+pct start <vmid> && pct exec <vmid> -- bash
+```
+
+## Work seems to be stuck
+
+**A workspace will not reap.**
+By design, and the timeline says which of the three exemptions applied: a blocked agent,
+uncommitted or unpushed work, or a workspace the controller could not inspect. Push or discard, and
+the hold releases on the spot rather than at the next pass.
+→ [Seeing the work](/docs/concepts/seeing-the-work)
+
+**Containers show up as orphans after a database restore.**
+Expected, and the reason nothing about orphans runs on a timer. A restored or lost database makes
+every live workspace look orphaned. The scan reports; it never destroys.
+→ [Ownership](/docs/concepts/ownership)
