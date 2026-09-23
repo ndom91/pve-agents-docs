@@ -45,6 +45,16 @@ Do not maintain an independent controller allocation table in parallel with anot
 Proxmox SDN DHCP/IPAM remains documented as a technology preview. Use it only if the homelab
 already depends on it successfully.
 
+## Tailscale
+
+Not run inside every workspace. It adds enrollment credentials, node cleanup, another readiness
+dependency and another identity system — four things per container, on a subnet the controller can
+already reach.
+
+A Tailscale subnet router is the cleaner option when client machines cannot route to the agent
+subnet directly. In that model the LXC stays an ordinary private-subnet host and knows nothing
+about any of it.
+
 ## SSH host verification
 
 Each cloned LXC must have unique SSH host keys. Never preserve the template's host private keys
