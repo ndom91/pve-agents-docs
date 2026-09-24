@@ -62,6 +62,38 @@ Hydration threw. `check`, `typecheck`, `test` and `build` do not load a page and
 A person has to open the site — especially after anything touching `src/router.tsx`, routing or SSR.
 → [Deploying](/docs/operations/deploying)
 
+## An agent will not run
+
+**A `POST /api/workspaces` that used to work now fails validation.**
+`harnessId` is required, and there is no controller-wide default — picking an agent for the caller
+would run one they did not choose.
+
+<Callout type="warn">
+**Known limitation: no HTTP route lists configured agents.** `listLaunchableHarnesses` is a server
+function the browser calls, not a route, so a scripted caller cannot discover its id. Read it from
+the Agents tab and put it in the script's configuration.
+</Callout>
+
+**Nothing can be launched, and the form says so.**
+No agent is configured, or every one is disabled. Nothing earlier in setup fails because of this:
+the controller starts, reports healthy, and passes every check.
+→ [The Agents tab](/docs/reference/agents)
+
+**`harness: this controller cannot run "<kind>"`.**
+The kind is not in this build's registry — usually a controller on older code than the one the
+agent was configured on. The message lists what it does know.
+→ [Agents and harnesses](/docs/concepts/agents)
+
+**`an opencode credential is JSON, like {"integration":…}`.**
+opencode's credential is an envelope naming the integration, not a bare token. The value alone does
+not say which integration it belongs to, and opencode stores that separately. Refused at save on
+purpose: the alternative surfaces an hour later as an agent that cannot explain itself.
+→ [The Agents tab](/docs/reference/agents#the-credential)
+
+**An agent comes up unauthenticated, and editing its credential changes nothing.**
+Credentials are written into a container at provision time. A fix applies to the next workspace;
+the running one has the old value in its filesystem. Fix it, then launch a new workspace.
+
 ## A workspace will not build
 
 **`destroy_ownership_mismatch`, and the destroy has halted.**
