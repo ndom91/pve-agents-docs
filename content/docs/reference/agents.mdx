@@ -1,0 +1,96 @@
+---
+title: The Agents tab
+description: Where a credential goes in and never comes back out.
+---
+
+The agents a workspace can be launched on. Each carries its own credential, stored in the controller
+database and written into a workspace as it is provisioned.
+
+Settings → **Agents**. A list beside an editor, the same shape as the seed files tab, because it is
+the same job: several configured things, one open at a time.
+
+<Callout type="warn">
+**A workspace cannot be launched until there is one.** This is the step that is easy to reach the
+end of setup without, because nothing before it fails. The launch form simply has nothing to offer.
+</Callout>
+
+## The fields
+
+| | |
+|---|---|
+| **Name** | Yours to choose. What you pick it by when launching a workspace, and what the workspace then shows. |
+| **Type** | Which coding agent runs in the workspace. The list is what this build can drive — see [agents and harnesses](/docs/concepts/agents). |
+| **Credential** | Written into each workspace as it is provisioned. Never sent back to this page once saved. |
+| **Model** | Optional. opencode wants `provider/model`; Claude Code ignores this and chooses its own. |
+| **Enabled** | Whether to offer this agent when launching a workspace. |
+
+**Several agents can share a Type.** Two Claude subscriptions, each with its own credential and its
+own name, is the case this exists for. Type is which software drives the agent, not which agent it
+is.
+
+**Leave Model empty unless you mean it.** Each agent then picks for itself and stays current as
+models change. A name pinned here is a name that goes stale with nothing to notice.
+
+**A disabled agent stays in this tab** — that is how it gets re-enabled — and is absent from the
+launch form.
+
+## The credential
+
+Write-only, and enforced by the shape rather than by a line someone could delete: the type the list
+endpoint returns has no credential field at all, and the query names its columns rather than
+selecting everything, so a secret column added later cannot quietly widen what the browser sees.
+
+**Blank on an edit means "keep the stored one".** It is the one field where blank cannot mean empty.
+Otherwise renaming an agent would silently blank its token, and you would find out at the next
+provision.
+
+The formats are not the same, because the agents are not:
+
+**Claude Code** takes the string from `claude setup-token`. That needs a browser and a Claude
+subscription. It is not an API key.
+
+**opencode** takes a JSON envelope naming the integration the value belongs to:
+
+```json
+{ "integration": "openai", "value": { } }
+```
+
+An envelope rather than the bare value because the value does not say which integration it is for,
+and opencode stores the integration as a separate column. opencode has no API that accepts a
+credential — its OAuth routes need a person with a browser — so the runner writes a row into
+opencode's own database, which it reads on the next start.
+
+<Callout>
+**A malformed credential is refused when you press save, not when a workspace fails.** The alternative
+is a container that provisions fine and comes up unauthenticated an hour later without being able to
+say why. The check is the harness's own, so a third agent with a structured credential adds a
+directory rather than a branch.
+</Callout>
+
+Credentials are capped at 16 KB. Generously, on purpose: a Claude token is a few hundred bytes and
+opencode's about two thousand, and the cap is there to stop a paste accident becoming a database
+row rather than to express a belief about what a token looks like.
+
+## When a change takes effect
+
+**On the next workspace.** A credential is written into a container at provision time, so:
+
+- Rotating one leaves every running workspace alone. No restart, and nothing to redeploy.
+- Deleting an agent leaves workspaces already running on it untouched. Their runner is installed
+  and their credential is already in the container; nothing about them reads the row again.
+- An agent that is up and unauthenticated cannot be rescued by editing its credential here. Fix the
+  credential, then launch a new workspace.
+
+This is the same split the rest of the controller uses: `.env` holds what the controller **is** and
+wants a restart; the database holds what it **does** and does not. See
+[configuration versus policy](/docs/getting-started/environment#configuration-versus-policy).
+
+## Permissions
+
+There is no permission-mode setting here, and there used to be. It was a second gate on a question
+each agent's own configuration already answers — Claude from `.claude/settings.json`, opencode from
+its permission lists — and two places deciding one thing, in two vocabularies that do not translate,
+is how they end up disagreeing.
+
+Configure it per agent with a [seed file](/docs/reference/seed-files) instead. Whatever the agent
+does not resolve for itself still reaches the approval UI.

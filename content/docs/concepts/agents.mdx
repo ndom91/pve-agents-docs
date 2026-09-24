@@ -1,0 +1,89 @@
+---
+title: Agents and harnesses
+description: What differs between one coding agent and the next, and where those differences live.
+---
+
+The controller ran exactly one agent for most of its life. Claude Code was not a choice so much as
+a set of assumptions spread through the code: an SDK import in the runner, Anthropic content blocks
+parsed in the browser, `~/.claude.json` special-cased in the provisioner, one OAuth token in `.env`,
+and a merge rule in the seed service that named one file.
+
+A **harness** is where those differences live now. An operator configures agents in the
+[Agents tab](/docs/reference/agents); this page is what a harness is underneath that.
+
+## A description, not an abstraction
+
+The protocol between the controller and a workspace was already neutral. Out: attach, snapshot,
+prompt, decide, interrupt. Back: snapshot, message, approval, resolved, status, fatal. So was the
+transport carrying it. What was not neutral was scattered rather than central.
+
+So the interface was found by taking Claude Code out, not by imagining what a future agent might
+want. It has five members, which is short, and the next agent added will probably lengthen it.
+
+| | |
+|---|---|
+| `bootstrap` | Files written into the workspace so the agent starts without a human. A list, because "what does this write" has a list-shaped answer. |
+| `credential` | The shell variable the agent itself reads. Not the controller's config key, which is the same for every harness. |
+| `merges` | Whether a seeded file is merged into what is already there rather than written over it. |
+| `runner` | The process shipped into the workspace. The only part that talks to the agent's own API. |
+| `readTranscript` | Where a wire format stops and the rows a person reads begin. |
+
+Each exists because something concrete broke without it. `bootstrap` is there because Claude Code
+has two first-run gates behind one JSON file and would otherwise stall on a question nobody is
+present to answer. `merges` is there because the workspace writes that same file itself, and seeding
+over it takes away the flags that let the agent start at all.
+
+## A registry, not a union
+
+Harnesses register themselves by name. Adding an agent is adding a directory, rather than editing a
+type that every consumer then has to be re-checked against.
+
+<Callout type="warn">
+**An unknown name throws rather than falling back to a default.** A controller configured for an
+agent it does not have has been misconfigured, and quietly running a different agent than the one
+asked for is the worst available answer — it would look like it worked.
+</Callout>
+
+The registry is also what the settings page offers as **Type**, so a controller running an older
+build cannot be configured for an agent it could not start.
+
+## The two that ship
+
+They agree about almost nothing, which is the argument for the interface existing at all.
+
+**claude-code** runs through `@anthropic-ai/claude-agent-sdk`, in process, with a tool call that no
+rule resolves falling through to a suspended `canUseTool` callback. Its credential is an opaque
+OAuth token from `claude setup-token`.
+
+**opencode2** runs a server on loopback, reads a password off its stdout, and subscribes to an event
+bus. It writes no configuration file, so it merges nothing. Its credential is a JSON envelope rather
+than a string, because opencode has no API that accepts a credential at all — the runner writes a
+row into opencode's own database and opencode reads it on the next start.
+
+Neither mechanism resembles the other. Everything above the harness boundary is the same for both.
+
+## Kind versus configured agent
+
+Two things are called "agent" and they are not the same, which is why the settings form labels its
+second field **Type** rather than Agent.
+
+- **The kind** is code: what this build can drive. It comes from the registry.
+- **The configured agent** is a row an operator created: a name, a kind, a credential, optionally a
+  model. Several can share one kind — two Claude subscriptions, say — and each keeps its own
+  credential.
+
+They meet at `kind`, and nowhere else. The settings endpoint asks the registry whether a kind can be
+run, and asks the *harness* whether a credential is one that agent could use, rather than switching
+on a name. An earlier version compared the kind to a string literal and imported opencode's own
+module to validate its credential, which made a file that should know no agent's name grow a branch
+per agent.
+
+## What a workspace remembers
+
+A workspace records which agent it was launched on, and that choice is required at request time —
+there is no controller-wide default, because picking one on the caller's behalf runs an agent they
+did not choose.
+
+Deleting a configured agent leaves workspaces already running on it untouched. Their runner is
+installed and their credential was written into the container at provision time, so nothing about
+them reads that row again.

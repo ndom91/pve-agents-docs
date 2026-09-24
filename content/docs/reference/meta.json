@@ -1,5 +1,5 @@
 {
   "title": "Reference",
   "icon": "BookMarked",
-  "pages": ["http-api", "seed-files", "environment-variables"]
+  "pages": ["http-api", "agents", "seed-files", "environment-variables"]
 }
