@@ -9,7 +9,7 @@ To go past the queue and build real containers:
 - A Proxmox host with an API token, a pool, and a template built by
   `deploy/build-workspace-template.sh`
 - A GitHub App, for cloning and pushing as an installation rather than as you
-- A Claude subscription token for the agents
+- A credential for at least one coding agent — a Claude subscription token, or an opencode one
 
 [Proxmox setup](/docs/getting-started/proxmox-setup) walks the hypervisor side of that in order,
 including the two things that are easy to reach the end without: the controller's SSH key, and the
@@ -37,5 +37,9 @@ are easy to confuse:
 
 ## The agent credential
 
-`WORKSPACE_CLAUDE_OAUTH_TOKEN` comes from `claude setup-token`, which needs a browser and a Claude
-subscription. It is not an API key. Without it a workspace builds and the agent step fails.
+Not an environment variable. Agents are configured in the [Agents tab](/docs/reference/agents), each
+with its own credential, and **a workspace cannot be launched until there is at least one**.
+
+For Claude Code the credential comes from `claude setup-token`, which needs a browser and a Claude
+subscription. It is not an API key. opencode takes a JSON envelope instead. Which agents a build can
+drive is [its own topic](/docs/concepts/agents).

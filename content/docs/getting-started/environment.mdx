@@ -3,7 +3,8 @@ title: Environment
 description: The variables that decide whether anything happens.
 ---
 
-Copy `.env.example` to `.env`. Thirty variables, of which these decide whether anything happens:
+Copy `.env.example` to `.env`. Twenty-eight variables, of which these decide whether anything
+happens:
 
 | | |
 |---|---|
@@ -11,8 +12,10 @@ Copy `.env.example` to `.env`. Thirty variables, of which these decide whether a
 | `PROVISIONING_ENABLED` | Gates every Proxmox write. Off by default. |
 | `PROXMOX_*` | URL, token, node, pool, template VMID, bridge, VMID floor. |
 | `GITHUB_APP_*` | Id, installation id and key path. How the controller clones and pushes. Distinct from `GITHUB_CLIENT_*`, which is only how you sign in. |
-| `WORKSPACE_CLAUDE_OAUTH_TOKEN` | From `claude setup-token`. Without it a workspace builds and the agent step fails. |
 | `WORKER_ENABLED` | Runs the operation worker in the server process. Off by default, so the first clone and destroy can be stepped by hand with `pnpm worker:tick`. |
+
+**No agent credential is in here.** Those live in the [Agents tab](/docs/reference/agents), one per
+configured agent, because there is more than one agent now and more than one credential format.
 
 The full list, with the reasoning for each, is in
 [the environment variable reference](/docs/reference/environment-variables).
@@ -31,6 +34,10 @@ of configuration is one more than can be kept in agreement.
 `.env` holds what the controller **is**: its Proxmox token, its GitHub App, where its key lives.
 Changing those is a deployment change and a restart is the natural moment.
 
-The database holds what it **does**: whether reaping is on and its thresholds. Those get tuned
-against a running fleet, so they are read on every pass and take effect without a restart. That is
-the entire reason they moved.
+The database holds what it **does**: whether reaping is on and its thresholds, and which agents a
+workspace can be launched on. Those get tuned against a running fleet, so they are read when they
+are needed and take effect without a restart. That is the entire reason they moved.
+
+Agent credentials turned out to be the second kind rather than the first, which is not obvious: they
+look like deployment configuration. But there are several of them, they are added and rotated while
+the fleet runs, and a restart to change one would be a restart to add an agent.

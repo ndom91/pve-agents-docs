@@ -151,4 +151,14 @@ Then set `PROVISIONING_ENABLED=true` and restart. The controller refuses to star
 on unless `CONTROLLER_AUTH_SECRET` is set, which is the intended order: authentication before
 anything can be built.
 
+## Configure an agent
+
+One step left, and it is not in `.env`. Open Settings → **Agents** and add one, with its credential.
+
+<Callout type="warn">
+**Nothing before this point fails without it.** The controller starts, reports healthy, and passes
+every check with no agent configured — and then the launch form has nothing to offer. See
+[the Agents tab](/docs/reference/agents).
+</Callout>
+
 Next: [your first workspace](/docs/getting-started/first-workspace).

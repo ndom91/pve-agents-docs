@@ -70,8 +70,6 @@ requires the auth and GitHub settings above.
 | `WORKSPACE_SSH_USER` | Defaults to `agent`. |
 | `WORKSPACE_SSH_KEY_PATH` | The controller's private key. Only on the controller. |
 | `WORKSPACE_SUBNET` | Restricts address discovery to the workspace network, so a container's own bridge is never mistaken for its address. |
-| `WORKSPACE_CLAUDE_OAUTH_TOKEN` | From `claude setup-token`. Not an API key. Without it a workspace builds and the agent step fails. |
-| `WORKSPACE_PERMISSION_MODE` | Defaults to `auto` — a second model reviewing each action rather than a person. |
 | `WORKSPACE_ACTIVITY_INTERVAL_SECONDS` | How often each ready agent is read. Defaults to 30. |
 
 ## Not in the environment
@@ -80,6 +78,16 @@ Reaping — whether it is on, the idle timeout, the maximum age, the failed-work
 lives in the database and is configured from the settings page. It is read on every pass, so a
 change applies without a restart. See
 [configuration versus policy](/docs/getting-started/environment#configuration-versus-policy).
+
+**Agent credentials** are there too, one per configured agent, in the
+[Agents tab](/docs/reference/agents). `WORKSPACE_CLAUDE_OAUTH_TOKEN` was the single controller-wide
+token and is gone: there is more than one agent now, more than one credential format, and a
+deployment can have several of the same kind.
+
+**`WORKSPACE_PERMISSION_MODE` is gone as well**, and nothing replaced it in the environment. It was a
+second gate on a question each agent's own configuration already answers, and two places deciding
+one thing in two vocabularies is how they end up disagreeing. Seed the agent's own configuration
+instead.
 
 `NODE_EXTRA_CA_CERTS` cannot live in the env file either: Node reads it before `--env-file` is
 processed, so the systemd unit sets it directly.

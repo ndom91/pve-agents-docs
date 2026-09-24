@@ -55,6 +55,11 @@ Leave `PROVISIONING_ENABLED=false` until the Proxmox template, pool, network, an
 have been verified against disposable infrastructure.
 </Step>
 
+<Step>
+Configure at least one agent in Settings → **Agents**. Nothing can be launched without one, and no
+check before this point fails because of it.
+</Step>
+
 </Steps>
 
 Every route accepts either an operator session cookie (browser, via GitHub sign-in) or an
@@ -153,9 +158,22 @@ minting a scoped token is itself the access check.
 
 ## Agent credentials
 
-`WORKSPACE_CLAUDE_OAUTH_TOKEN` comes from `claude setup-token`, which needs a browser and a Claude
-subscription. It is not an API key. Rotating it is an edit and a restart; nothing is baked into the
-template, so no clone carries it.
+In the database, one per configured agent, managed from the **Agents** tab. Not in `.env`: there is
+more than one agent, more than one credential format, and a deployment can have several of the same
+kind. See [the Agents tab](/docs/reference/agents) for the fields and the formats.
+
+**Rotating one is an edit and no restart.** A credential is written into a container at provision
+time, so a change takes effect on the next workspace and leaves running ones alone. Nothing is baked
+into the template, so no clone carries one.
+
+The database holds these, which is worth knowing before a restore: rolling back the database rolls
+back agent credentials along with issued API keys.
+
+<Callout type="warn">
+**A workspace cannot be launched with no agent configured.** Configuration validation does not catch
+this — it is not configuration — so a controller can start healthy, pass every check, and have a
+launch form with nothing in it.
+</Callout>
 
 ## VMID range
 
