@@ -46,6 +46,7 @@ curl -X POST https://pve-agents.example.internal/api/workspaces \
   -H "content-type: application/json" \
   -d '{
         "idempotencyKey": "ci-run-8813",
+        "harnessId": "b0f1e8a2-...",
         "repository": "github.com/you/your-repo",
         "ref": "main",
         "purpose": "Work out why the nightly job leaves orphans behind"
@@ -55,9 +56,24 @@ curl -X POST https://pve-agents.example.internal/api/workspaces \
 | Field | | |
 |---|---|---|
 | `idempotencyKey` | required | 1-255 chars. Replaying the same key returns the workspace the first call made, rather than building a second container. Replaying it with a *different* body is a conflict, not a new workspace. |
+| `harnessId` | required | Which configured agent to run it on. See below. |
 | `repository` | required | 1-2000 chars. |
 | `ref` | optional | 1-255 chars, defaults to `main`. |
 | `purpose` | optional | 1-500 chars. What the agent is told to do. Without it the workspace comes up ready and idle, waiting for a prompt. |
+
+### Where `harnessId` comes from
+
+It is the id of a row in the [Agents tab](/docs/reference/agents). Required, with no controller-wide
+default: picking an agent on the caller's behalf would run one they did not choose.
+
+<Callout type="warn">
+**There is no HTTP route that lists configured agents**, so a scripted caller cannot discover its
+id — it has to be given one. `listLaunchableHarnesses` exists, but as a server function the browser
+calls, not as a route. Read the id from the Agents tab and put it in the caller's configuration.
+
+This is a gap rather than a design. A request without `harnessId` is refused by validation, which is
+what someone upgrading an existing script will see first.
+</Callout>
 
 The response is the persisted workspace. It has been *requested*, not built: the worker picks it up
 on its next pass, and the container appears some tens of seconds later. Poll

@@ -11,9 +11,15 @@ to exist. That is the intended way to see the state machine without a hypervisor
 
 ## Ask for work
 
-The form takes three things: a repository, a ref, and a purpose. The purpose is handed to the agent
-verbatim, so write it as you would write it to a person — "work out why the nightly job leaves
-orphans behind" rather than a list of steps.
+The form takes four things: an agent, a repository, a ref, and a purpose. The purpose is handed to
+the agent verbatim, so write it as you would write it to a person — "work out why the nightly job
+leaves orphans behind" rather than a list of steps.
+
+<Callout type="warn">
+**With no agent configured the form has nothing to offer**, and says so rather than failing. Add one
+in Settings → [Agents](/docs/reference/agents) first. There is no default agent, here or over the
+API.
+</Callout>
 
 The same request over HTTP, for a CI job or a terminal:
 
@@ -21,10 +27,11 @@ The same request over HTTP, for a CI job or a terminal:
 curl -X POST http://127.0.0.1:3000/api/workspaces \
   -H "x-api-key: $PVE_AGENTS_KEY" \
   -H "content-type: application/json" \
-  -d '{"idempotencyKey":"first-try","repository":"github.com/you/your-repo","ref":"main","purpose":"Find out why the nightly job leaves orphans behind"}'
+  -d '{"idempotencyKey":"first-try","harnessId":"<from the Agents tab>","repository":"github.com/you/your-repo","ref":"main","purpose":"Find out why the nightly job leaves orphans behind"}'
 ```
 
-See [the HTTP API](/docs/reference/http-api) for the rest of it.
+See [the HTTP API](/docs/reference/http-api) for the rest of it, including why `harnessId` has to be
+copied out of the UI rather than looked up.
 
 <Callout type="warn">
 **Nothing advances until a worker runs, and the worker is off by default.** `WORKER_ENABLED=false`
