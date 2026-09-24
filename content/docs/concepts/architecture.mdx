@@ -11,8 +11,11 @@ rather than the intention quietly removed.
 A request for work, not a request for a container.
 
 You supply a repository, a ref, and a purpose. The controller builds a disposable Proxmox LXC,
-checks the repository out into it, starts a Claude Code agent inside it, and gives that agent the
-purpose verbatim. The container is an implementation detail of that.
+checks the repository out into it, starts a coding agent inside it, and gives that agent the purpose
+verbatim. The container is an implementation detail of that.
+
+Which agent is part of the request rather than a property of the controller. There is no default:
+picking one on the caller's behalf would run an agent they did not choose.
 
 One agent per workspace. An earlier plan had several; nothing needed them, and one agent per
 container keeps the ownership, credential, and teardown stories simple.
@@ -45,9 +48,14 @@ already a plain `ssh -tt` rather than a Herdr session.
 **Provisioning.** The controller owns the infrastructure lifecycle: clone, boot, address, reach,
 bootstrap, check out, destroy. It holds a pool-scoped Proxmox token. Nothing else does.
 
-**Agent control.** A runner process inside each workspace holds one Claude Code Agent SDK session
+**Agent control.** A runner process inside each workspace holds one coding-agent session
 open and listens on a unix socket. The controller reaches it with `ssh -- nc -U`. See
 [the agent runner](/docs/concepts/the-agent-runner).
+
+Which coding agent that is, is the workspace's own choice rather than the controller's. What differs
+between one agent and the next lives behind a single interface — see
+[agents and harnesses](/docs/concepts/agents) — and everything above that line is the same for all
+of them.
 
 **Human interface.** A dashboard: a sidebar of workspaces, the agent's conversation with a prompt
 below it, and a tabbed rail holding placement, the diff, the timeline and a shell.

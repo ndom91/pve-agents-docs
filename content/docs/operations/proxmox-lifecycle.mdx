@@ -16,7 +16,7 @@ node, pnpm, bun
 python, uv
 go, rust
 ripgrep, fd, jq
-codex, claude-code, opencode
+codex, claude-code, opencode, opencode2
 @anthropic-ai/claude-agent-sdk
 openssh-server
 normal shell and build tooling
@@ -24,6 +24,11 @@ normal shell and build tooling
 
 The build verifies that whole list before converting, so a template that exists is one that has all
 of it.
+
+One template runs every agent. `opencode2` is the v2 beta and installs beside v1 rather than over
+it, so both are on PATH under their own names. A template missing an agent's binary produces
+workspaces that provision cleanly and fail at the runner, which is why this is checked rather than
+assumed.
 
 Build it with `deploy/build-workspace-template.sh`, which provisions a scratch container and
 converts that into a new template. Editing a template in place does not work: linked clones come

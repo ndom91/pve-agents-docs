@@ -17,11 +17,17 @@ because `~/.config/agent-env` is hooked into `.bashrc` and a detached non-intera
 reads it. Without that line the runner starts, listens, accepts prompts, and answers every one with
 "Not logged in".
 
-**Shipped by the controller, with only the SDK in the template.** The logic changes often and a
-template rebuild is a VMID swap; the dependency changes rarely and weighs about 245 MB. Containers
-are linked clones of one ZFS snapshot, so the template pays that once for the whole fleet. The
-runner finds the SDK through a `node_modules` symlink to the global root — `NODE_PATH` is a
-CommonJS mechanism and node's ESM resolver ignores it.
+**One runner per agent, shipped by the controller.** The runner is the only part that talks to its
+agent's own API, so it is most of what a new [harness](/docs/concepts/agents) is made of, and which
+one gets installed follows from the agent the workspace was launched on. They share the socket half
+— every runner imports `agent-socket.mjs` — which works because they are copied into one directory
+with no build step to flatten.
+
+**Only the SDK lives in the template.** The runner logic changes often and a template rebuild is a
+VMID swap; the dependency changes rarely and weighs about 245 MB. Containers are linked clones of
+one ZFS snapshot, so the template pays that once for the whole fleet. The runner finds the SDK
+through a `node_modules` symlink to the global root — `NODE_PATH` is a CommonJS mechanism and
+node's ESM resolver ignores it.
 
 **Attaching replays.** The snapshot carries the whole transcript and every parked approval, because
 a controller that restarts leaves approvals waiting inside a runner that is still alive, and a
@@ -31,7 +37,10 @@ reader that only subscribed would show an idle agent that is actually waiting fo
 destroying a workspace destroys its transcript. That was already true of the screen, and the
 timeline still records prompts, pushes and discards, so the record of what was *decided* survives.
 
-**Permissions default to `auto`** — a second model reviewing each action rather than a person —
-and the mode is configurable. Confirmed working on the subscription token. When auto mode is not
-available to a session, Claude Code silently runs Manual instead, which degrades safely here
-because every call then reaches the approval UI.
+**Permissions are the agent's own business.** There was a controller-side mode and it is gone: each
+agent already decides what it asks about — Claude from `.claude/settings.json`, opencode from its
+permission lists — and two places deciding one thing, in two vocabularies that do not translate, is
+how they end up disagreeing. Configure it with a [seed file](/docs/reference/seed-files) instead.
+
+Whatever an agent does not resolve for itself reaches the approval UI, which is what makes the
+absence of a controller-side gate safe rather than permissive.

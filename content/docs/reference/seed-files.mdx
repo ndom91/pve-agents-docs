@@ -63,6 +63,11 @@ still is: it has to be a JSON object, not an array and not a string.
 
 Only at the `home` root. A `.claude.json` in the checkout is an ordinary file.
 
+**Which destinations merge is the agent's own answer**, not a rule in the seeding code. Claude Code
+names this one file; opencode names none, because it writes no configuration during bootstrap and so
+has nothing to protect. An agent with no such file says no to everything, which is the honest
+default rather than an omission. See [agents and harnesses](/docs/concepts/agents).
+
 <Callout type="warn">
 **Nothing validates key names.** A typo merges in silently and looks right in `cat`, and the
 symptom is a feature that is simply absent. `mcpServer` instead of `mcpServers` cost an afternoon.

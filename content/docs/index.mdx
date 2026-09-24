@@ -5,13 +5,13 @@ icon: Boxes
 ---
 
 Give it a repository, a ref, and a purpose. It clones a golden template, boots an LXC, checks the
-repository out, starts a Claude Code agent inside it and hands it the purpose. The web UI streams
+repository out, starts a coding agent inside it and hands it the purpose. The web UI streams
 that agent's transcript, takes prompts, answers its permission dialogs, shows what it changed, and
 pushes or discards the result. When a workspace has outlived its usefulness the controller destroys
 it — unless it is holding work nobody kept.
 
-The controller owns the lifecycle, the policy and the UI. Proxmox owns the containers. Claude Code
-owns the actual work.
+The controller owns the lifecycle, the policy and the UI. Proxmox owns the containers. The coding
+agent owns the actual work.
 
 ```text
                 You, in a browser
@@ -22,11 +22,11 @@ owns the actual work.
            │                          │
            ▼                          ▼
      Proxmox API                 workspace LXC
- clone · boot · destroy      Claude Code · git checkout
+ clone · boot · destroy      coding agent · git checkout
 ```
 
-Built for one operator on a trusted LAN. It holds a Proxmox token, a GitHub App key and a Claude
-subscription token, and it creates and destroys real containers.
+Built for one operator on a trusted LAN. It holds a Proxmox token, a GitHub App key and a credential
+for every agent it can run, and it creates and destroys real containers.
 
 ## What it does
 
@@ -52,7 +52,7 @@ subscription token, and it creates and destroys real containers.
   `deploy/build-workspace-template.sh`. The controller runs against its API; it does not have to
   run on the host itself.
 - **RAM on that host to match how many workspaces you want at once.** Each one is a real LXC
-  running a checkout and a Claude Code agent, so the ceiling on parallelism is the memory you are
+  running a checkout and a coding agent, so the ceiling on parallelism is the memory you are
   willing to give them. Size a single container in the template, decide how many you want live,
   and multiply — the controller will happily ask for more than the host can seat.
 - **Disk is cheaper than it looks.** Containers are linked clones of one ZFS snapshot, so the
@@ -60,7 +60,9 @@ subscription token, and it creates and destroys real containers.
   than per workspace.
 - **Node 22+ and pnpm**, wherever the controller runs.
 - **A GitHub App**, so the controller clones and pushes as an installation rather than as you.
-- **A Claude subscription token**, from `claude setup-token`. Not an API key.
+- **A credential for at least one coding agent.** Claude Code takes a subscription token from
+  `claude setup-token`, not an API key; opencode takes its own. They are configured in the UI rather
+  than in the environment, and a workspace cannot be launched until one exists.
 
 None of that is needed to try the UI. With `PROVISIONING_ENABLED` off — which is the default —
 a request queues a durable operation and builds nothing, so the whole state machine can be
@@ -74,6 +76,7 @@ exercised without a hypervisor anywhere near it. See the
 | [Quick start](/docs/getting-started/quick-start) | Running locally in three commands, without a hypervisor. |
 | [Proxmox setup](/docs/getting-started/proxmox-setup) | The hypervisor side, in order, up to a template you can clone. |
 | [Your first workspace](/docs/getting-started/first-workspace) | The loop you actually live in, once it runs. |
+| [Agents and harnesses](/docs/concepts/agents) | What differs between one coding agent and the next, and where it lives. |
 | [Architecture](/docs/concepts/architecture) | The system as built, including where an earlier intention was abandoned and why. |
 | [Production runbook](/docs/operations/production-runbook) | Deploying and operating it. |
 | [Troubleshooting](/docs/operations/troubleshooting) | Symptoms, in the words on the screen. |
